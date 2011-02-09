@@ -21,10 +21,10 @@
 # MA 02111-1307 USA
 #
 
-VERSION = 2010
-PATCHLEVEL = 12
+VERSION = 2011
+PATCHLEVEL = 03
 SUBLEVEL =
-EXTRAVERSION =
+EXTRAVERSION = -rc1
 ifneq "$(SUBLEVEL)" ""
 U_BOOT_VERSION = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
 else
@@ -416,6 +416,10 @@ $(U_BOOT_ONENAND):	$(ONENAND_IPL) $(obj)u-boot.bin
 $(VERSION_FILE):
 		@( printf '#define U_BOOT_VERSION "U-Boot %s%s"\n' "$(U_BOOT_VERSION)" \
 		 '$(shell $(TOPDIR)/tools/setlocalversion $(TOPDIR))' ) > $@.tmp
+		@( printf '#define CC_VERSION_STRING "%s"\n' \
+		 '$(shell $(CC) --version | head -n 1)' )>>  $@.tmp
+		@( printf '#define LD_VERSION_STRING "%s"\n' \
+		 '$(shell $(LD) -v | head -n 1)' )>>  $@.tmp
 		@cmp -s $@ $@.tmp && rm -f $@.tmp || mv -f $@.tmp $@
 
 $(TIMESTAMP_FILE):
