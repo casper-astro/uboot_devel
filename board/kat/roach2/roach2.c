@@ -36,17 +36,13 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-#if 0
 extern flash_info_t flash_info[CONFIG_SYS_MAX_FLASH_BANKS]; /* info for FLASH chips */
 
 ulong flash_get_size(ulong base, int banknum);
-#endif
 
 int board_early_init_f(void)
 {
-	u32 sdr0_cust0;
 	u32 sdr0_pfc1, sdr0_pfc2;
-	u32 reg;
 
 	mtdcr(EBC0_CFGADDR, EBC0_CFG);
 	mtdcr(EBC0_CFGDATA, 0xb8400000);
@@ -144,7 +140,7 @@ int misc_init_r(void)
 #endif /* CONFIG_SYS_NO_FLASH */
 
 	/*
-	 * USB suff...
+	 * USB stuff...
 	 */
 	if (act == NULL || strcmp(act, "hostdev") == 0) {
 		/* SDR Setting */
@@ -153,7 +149,9 @@ int misc_init_r(void)
 		mfsdr(SDR0_USB2PHY0CR, usb2phy0cr);
 		mfsdr(SDR0_USB2H0CR, usb2h0cr);
 
-		usb2phy0cr = usb2phy0cr &~SDR0_USB2PHY0CR_XOCLK_MASK;
+    /* Need to select crystal clock source */
+		usb2phy0cr = usb2phy0cr | SDR0_USB2PHY0CR_XOCLK_CRYSTAL;
+		
 		usb2phy0cr = usb2phy0cr | SDR0_USB2PHY0CR_XOCLK_EXTERNAL;
 		usb2phy0cr = usb2phy0cr &~SDR0_USB2PHY0CR_WDINT_MASK;
 		usb2phy0cr = usb2phy0cr | SDR0_USB2PHY0CR_WDINT_16BIT_30MHZ;
@@ -281,7 +279,6 @@ int misc_init_r(void)
 int checkboard(void)
 {
 	char *s = getenv("serial#");
-	u8 rev;
 
 	printf("Board: ROACH2 - CASPER/KAT reconfigurable computing board");
 

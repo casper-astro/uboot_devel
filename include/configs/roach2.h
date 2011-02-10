@@ -262,6 +262,8 @@
 #define CONFIG_CMD_SDRAM
 #define CONFIG_CMD_USB
 
+#define CONFIG_CMD_ROACH2_SMAP
+
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  *----------------------------------------------------------------------*/
@@ -430,9 +432,9 @@
 #endif
 
 /* Bank 3 (selectmap) initialization */
-#ifdef CONFIG_SMAP_BASE
+#ifdef CONFIG_SYS_SMAP_BASE
 #define CONFIG_SYS_EBC_PB3AP  (EBC_AP_TWT(0) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1) | EBC_AP_SOR)
-#define CONFIG_SYS_EBC_PB3CR  (CONFIG_SYS_SMAP_BASE | EBC_BANK_1M  | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_16B)
+#define CONFIG_SYS_EBC_PB3CR  (CONFIG_SYS_SMAP_BASE | EBC_BANK_1M  | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_32B)
 #endif
 
 /* TODO: need to add second FPGA chip select for 'fast' interface */
