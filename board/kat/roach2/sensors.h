@@ -1,0 +1,22 @@
+#ifndef _SENSORS_ROACH2_H_
+#define _SENSORS_ROACH2_H_
+
+#ifdef CONFIG_CMD_ROACH2_SENSORS
+
+/*AD7414 U15 Ambient temperature sensor*/
+#define R2_SENSOR_AD7414_U15_I2C_ADDR   0x4C
+#define R2_SENSOR_AD7414_U18_I2C_ADDR   0x4E
+#define R2_SENSOR_AD7414_TV             0
+#define R2_SENSOR_AD7414_CR             1
+#define R2_SENSOR_AD7414_THIGH          2
+#define R2_SENSOR_AD7414_TLOW           3
+
+#define R2_SENSOR_MAX6650_U13_I2C_ADDR  0x48
+#define R2_SENSOR_MAX6650_U17_I2C_ADDR  0x4B
+#define R2_SENSOR_MAX6650_U21_I2C_ADDR  0x1B
+#define R2_SENSOR_MAX6650_U26_I2C_ADDR  0x1F
+#define R2_SENSOR_MAX6650_TACH0         0x0C
+
+
+#endif /*define CONFIG_CMD_RAOCH2_SENSORS*/
+#endif /*define _SENSORS_ROACH2_H_*/

@@ -262,6 +262,8 @@
 #define CONFIG_CMD_ROACH2_DEBUG
 #define CONFIG_CMD_ROACH2_GPIO
 
+#define CONFIG_CMD_ROACH2_SENSORS
+
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  *----------------------------------------------------------------------*/

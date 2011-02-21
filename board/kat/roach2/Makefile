@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(BOARD).o
 
-COBJS-y	= $(BOARD).o sdram.o cmd_roach2.o
+COBJS-y	= $(BOARD).o sdram.o cmd_roach2.o sensors.o
 SOBJS	= init.o
 
 COBJS   := $(COBJS-y)
