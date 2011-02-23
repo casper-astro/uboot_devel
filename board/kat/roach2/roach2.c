@@ -380,3 +380,11 @@ int testdram(void)
 	return 0;
 }
 #endif
+
+
+#ifdef CONFIG_LAST_STAGE_INIT
+int last_stage_init()
+{
+  return sensors_config();
+}
+#endif

@@ -6,10 +6,10 @@
 /*AD7414 Ambient temperature sensor*/
 #define R2_SENSOR_AD7414_U15_I2C_ADDR   0x4C
 #define R2_SENSOR_AD7414_U18_I2C_ADDR   0x4E
-#define R2_SENSOR_AD7414_TV             0
-#define R2_SENSOR_AD7414_CR             1
-#define R2_SENSOR_AD7414_THIGH          2
-#define R2_SENSOR_AD7414_TLOW           3
+#define R2_SENSOR_AD7414_TV             0x00
+#define R2_SENSOR_AD7414_CR             0x01
+#define R2_SENSOR_AD7414_THIGH          0x02
+#define R2_SENSOR_AD7414_TLOW           0x03
 
 /*MAX6650 FAN Speeds*/
 #define R2_SENSOR_MAX6650_U13_I2C_ADDR  0x48
@@ -19,13 +19,17 @@
 #define R2_SENSOR_MAX6650_TACH0         0x0C
 
 /*DS1307 Real Time Clock*/
-/*TODO: Not in i2c probe*/
 #define R2_SENSOR_DS1307_U11_I2C_ADDR   0x68
 
 /*MAX1805 Remote temperature for V6 and PPC*/
-#define R2_SENSOR_MAX1805_U22_I2C_ADDR  0x18
-#define R2_SENSOR_MAX1805_TEMP_DX1      0x01
-#define R2_SENSOR_MAX1805_TEMP_DX2      0x02
+#define R2_SENSOR_MAX1805_U22_I2C_ADDR      0x18
+#define R2_SENSOR_MAX1805_TEMP_DX1          0x01
+#define R2_SENSOR_MAX1805_TEMP_DX1_THIGH    0x0A
+#define R2_SENSOR_MAX1805_TEMP_DX1_TLOW     0x0B
+#define R2_SENSOR_MAX1805_TEMP_DX2          0x02
+#define R2_SENSOR_MAX1805_TEMP_DX2_THIGH    0x0C
+#define R2_SENSOR_MAX1805_TEMP_DX2_TLOW     0x0D
+
 
 
 #endif /*define CONFIG_CMD_RAOCH2_SENSORS*/

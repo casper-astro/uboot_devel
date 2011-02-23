@@ -28,7 +28,7 @@
 
 #ifdef CONFIG_CMD_ROACH2_SENSORS
 
-int dump_roach2_sensor_info()
+int dump_roach2_sensor_info(void)
 {
   uchar buffer[1];
 
@@ -73,13 +73,35 @@ int dump_roach2_sensor_info()
     printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
   }
   else
-    printf("Remote Temp of PPC (U22)\t\t:\t%d dC\n",(int)buffer[0]);
-  
+    printf("Remote Temp of PPC (U22)\t\t:\t%d dC\t",(int)buffer[0]);
+  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX1_THIGH,1, buffer, 1) != 0){
+    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
+  }
+  else
+    printf("T_HIGH: %d dC ",(int)buffer[0]);
+  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX1_TLOW,1, buffer, 1) != 0){
+    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
+  }
+  else
+    printf("T_LOW: %d dC",(int)buffer[0]);
+  printf("\n");
+
   if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX2,1, buffer, 1) != 0){
     printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
   }
   else
-    printf("Remote Temp of FPGA (U22)\t\t:\t%d dC\n",(int)buffer[0]);
+    printf("Remote Temp of FPGA (U22)\t\t:\t%d dC\t",(int)buffer[0]);
+  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX2_THIGH,1, buffer, 1) != 0){
+    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
+  }
+  else
+    printf("T_HIGH: %d dC ",(int)buffer[0]);
+  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX2_TLOW,1, buffer, 1) != 0){
+    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
+  }
+  else
+    printf("T_LOW: %d dC",(int)buffer[0]);
+  printf("\n");
   
   return 0;
 }
@@ -119,3 +141,11 @@ U_BOOT_CMD(
     "roach2_sensors rtc [time] - set the real time clock to time [ms from 60ies]\n"
 );
 #endif
+
+int sensors_config(void)
+{
+  printf("Sensors Config");
+  
+  return 0;
+}
+
