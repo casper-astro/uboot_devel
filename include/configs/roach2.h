@@ -49,6 +49,7 @@
 
 #define CONFIG_BOARD_EARLY_INIT_F 1  /* Call board_early_init_f  */
 #define CONFIG_MISC_INIT_R        1  /* Call misc_init_r    */
+#define CONFIG_LAST_STAGE_INIT    1  /* call last_stage_init */
 
 /*-----------------------------------------------------------------------
  * Base addresses -- Note these are effective addresses where the actual
@@ -461,7 +462,7 @@
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_0}, /* GPIO9  EBC_CS_N(4)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL,  GPIO_OUT_0}, /* GPIO10 EBC_CS_N(5)      */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO11 EBC_BUS_ERR      */  \
-{GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_0}, /* GPIO12 - SelectMAP INITn */  \
+{GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO12 - SelectMAP INITn */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO13 - SelectMAP DONE */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO14 - SelectMAP PROGn */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO15 - SelectMAP RDWRn */  \
@@ -492,7 +493,7 @@
 {GPIO1_BASE, GPIO_OUT, GPIO_ALT3, GPIO_OUT_1}, /* GPIO37 UART0_RTS_N  EBC_DATA(1)  UART3_SOUT*/ \
 {GPIO1_BASE, GPIO_OUT, GPIO_ALT2, GPIO_OUT_1}, /* GPIO38 UART0_8PIN_DTR_N UART1_SOUT  */  \
 {GPIO1_BASE, GPIO_IN , GPIO_ALT2, GPIO_OUT_0}, /* GPIO39 UART0_8PIN_RI_N UART1_SIN  */  \
-{GPIO1_BASE, GPIO_IN , GPIO_ALT1, GPIO_OUT_0}, /* GPIO40 UIC_IRQ(0)  - GETH_IRQn */  \
+{GPIO1_BASE, GPIO_IN , GPIO_ALT1, GPIO_OUT_0}, /* GPIO40 UIC_dIRQ(0)  - GETH_IRQn */  \
 {GPIO1_BASE, GPIO_IN , GPIO_ALT1, GPIO_OUT_0}, /* GPIO41 UIC_IRQ(1)  - FAULTn */  \
 {GPIO1_BASE, GPIO_IN , GPIO_ALT1, GPIO_OUT_0}, /* GPIO42 UIC_IRQ(2)  - V6_IRQn */  \
 {GPIO1_BASE, GPIO_IN , GPIO_ALT1, GPIO_OUT_0}, /* GPIO43 UIC_IRQ(3)  - THERM_ALERTn */  \
