@@ -114,7 +114,8 @@
 #define CONFIG_HARD_I2C      /* I2C with hardware support  */
 #define CONFIG_PPC4XX_I2C    /* use PPC4xx driver    */
 #define CONFIG_SYS_I2C_SLAVE    0x7F
-#define CONFIG_SYS_I2C_SPEED    400000  /* I2C speed and slave address  */
+/*#define CONFIG_SYS_I2C_SPEED    400000 */ /* I2C speed and slave address  */
+#define CONFIG_SYS_I2C_SPEED    100000  /* I2C speed and slave address  */
 
 /* I2C bootstrap EEPROM */
 #define CONFIG_4xx_CONFIG_I2C_EEPROM_ADDR   0x54 /* Boot Option G (0xA8 >> 1) */
@@ -261,6 +262,11 @@
 #define CONFIG_CMD_REGINFO
 #define CONFIG_CMD_SDRAM
 #define CONFIG_CMD_USB
+
+#define CONFIG_CMD_ROACH2_SMAP
+#define CONFIG_CMD_ROACH2_DEBUG
+#define CONFIG_CMD_ROACH2_GPIO
+#define CONFIG_CMD_ROACH2_SENSORS
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
