@@ -62,17 +62,17 @@ tlbtab:
 
 #ifdef CONFIG_SYS_CPLD_BASE
 	/* TLB-entry for cpld on EBC */
-	tlbentry( CONFIG_SYS_CPLD_BASE, SZ_1M, CONFIG_SYS_CPLD_BASE, 1, AC_RWX|SA_IG )
+	tlbentry( CONFIG_SYS_CPLD_BASE, SZ_1M, CONFIG_SYS_CPLD_BASE, 1, AC_R|AC_W|AC_X|SA_G|SA_I )
 #endif
 
 #ifdef CONFIG_SYS_SMAP_BASE
 	/* TLB-entry for selectmap on EBC */
-	tlbentry( CONFIG_SYS_SMAP_BASE, SZ_1M, CONFIG_SYS_SMAP_BASE, 1, AC_RWX|SA_IG )
+	tlbentry( CONFIG_SYS_SMAP_BASE, SZ_1M, CONFIG_SYS_SMAP_BASE, 1, AC_R|AC_W|AC_X|SA_G|SA_I )
 #endif
 
 #ifdef CONFIG_SYS_FPGA_BASE
 	/* TLB-entry for FPGA */
-	tlbentry( CONFIG_SYS_FPGA_BASE, SZ_256M, CONFIG_SYS_FPGA_BASE, 1, AC_RWX|SA_IG )
+	tlbentry( CONFIG_SYS_FPGA_BASE, SZ_256M, CONFIG_SYS_FPGA_BASE, 1, AC_R|AC_W|AC_X|SA_G|SA_I )
 #endif
 
 	tlbtab_end

@@ -38,7 +38,7 @@
  * High Level Configuration Options
  *----------------------------------------------------------------------*/
 
-#define CONFIG_ROACH2     1    /* Board is ROACH 2 */
+#define CONFIG_ROACH2     1    /* Board is Roach  */
 #define CONFIG_HOSTNAME   roach2
 #define CONFIG_440EPX     1  /* Specific PPC440EPx    */
 #define CONFIG_440        1  /* ... PPC440 family    */
@@ -67,14 +67,18 @@
 
 #define CONFIG_SYS_BOOT_BASE_ADDR     0xf0000000
 #define CONFIG_SYS_FLASH_BASE         0xf8000000  /* start of FLASH  */
+#if 0
+#define CONFIG_SYS_TLB_FOR_BOOT_FLASH 0x0003
+#endif
 
-#define CONFIG_SYS_PCI_BASE		0xe0000000	/* Internal PCI regs	*/
 #define CONFIG_SYS_OCM_BASE      0xe0010000  /* On-chip memory */
 #define CONFIG_SYS_OCM_DATA_ADDR CONFIG_SYS_OCM_BASE
 
 #define CONFIG_SYS_USB2D0_BASE    0xe0000100
 #define CONFIG_SYS_USB_DEVICE     0xe0000000
 #define CONFIG_SYS_USB_HOST       0xe0000400
+
+#define CONFIG_SYS_PCI_BASE		    0xe0000000	/* Internal PCI regs	*/
 
 /*-----------------------------------------------------------------------
  * Initial RAM & stack pointer
@@ -258,10 +262,6 @@
 #define CONFIG_CMD_SDRAM
 #define CONFIG_CMD_USB
 
-#define CONFIG_CMD_ROACH2_SMAP
-#define CONFIG_CMD_ROACH2_DEBUG
-#define CONFIG_CMD_ROACH2_GPIO
-
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  *----------------------------------------------------------------------*/
@@ -351,8 +351,6 @@
         "ramdisk_addr=FC180000\0" \
         "update=protect off FFFA0000 FFFFFFFF;era FFFA0000 FFFFFFFF;" \
          "cp.b 200000 FFFA0000 60000\0" \
-        "yget=loady 0x200000\0" \
-        "newuboot=cp.b 0xfffa0000 0x200000 0x60000; run yget update\0" \
         ""
 
 
@@ -421,20 +419,20 @@
 
 /* Bank 1 (FPGA) initialization */
 #ifdef CONFIG_SYS_FPGA_BASE
-#define CONFIG_SYS_EBC_PB1AP  (EBC_AP_TWT(1) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1) | EBC_AP_RE | EBC_AP_SOR)
+#define CONFIG_SYS_EBC_PB1AP  (EBC_AP_TWT(0) | EBC_AP_CSN(1) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1) | EBC_AP_RE | EBC_AP_SOR)
 #define CONFIG_SYS_EBC_PB1CR  (CONFIG_SYS_FPGA_BASE | EBC_BANK_128M | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_32B)
 #endif
 
 /* Bank 2 (CPLD) initialization */
 #ifdef CONFIG_SYS_CPLD_BASE
-#define CONFIG_SYS_EBC_PB2AP  (EBC_AP_TWT(1) | EBC_AP_CSN(1) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1))
+#define CONFIG_SYS_EBC_PB2AP  (EBC_AP_TWT(0) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1) | EBC_AP_SOR)
 #define CONFIG_SYS_EBC_PB2CR  (CONFIG_SYS_CPLD_BASE | EBC_BANK_1M | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_8B)
 #endif
 
 /* Bank 3 (selectmap) initialization */
-#ifdef CONFIG_SYS_SMAP_BASE
-#define CONFIG_SYS_EBC_PB3AP  (EBC_AP_TWT(1) | EBC_AP_CSN(1) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1))
-#define CONFIG_SYS_EBC_PB3CR  (CONFIG_SYS_SMAP_BASE | EBC_BANK_1M  | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_32B)
+#ifdef CONFIG_SMAP_BASE
+#define CONFIG_SYS_EBC_PB3AP  (EBC_AP_TWT(0) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1) | EBC_AP_SOR)
+#define CONFIG_SYS_EBC_PB3CR  (CONFIG_SYS_SMAP_BASE | EBC_BANK_1M  | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_16B)
 #endif
 
 /* TODO: need to add second FPGA chip select for 'fast' interface */
@@ -452,7 +450,7 @@
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO3  EBC_ADDR(4)  DMA_REQ(3)  */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO4  EBC_ADDR(3)  DMA_ACK(3)  */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO5  EBC_ADDR(2)  DMA_EOT/TC(3)  */  \
-{GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_0}, /* GPIO6  EBC_CS_N(1)      */  \
+{GPIO0_BASE, GPIO_IN , GPIO_ALT1, GPIO_OUT_0}, /* GPIO6  EBC_CS_N(1)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_0}, /* GPIO7  EBC_CS_N(2)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_0}, /* GPIO8  EBC_CS_N(3)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_0}, /* GPIO9  EBC_CS_N(4)      */  \
@@ -460,8 +458,8 @@
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO11 EBC_BUS_ERR      */  \
 {GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_0}, /* GPIO12 - SelectMAP INITn */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO13 - SelectMAP DONE */  \
-{GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO14 - SelectMAP PROGn */  \
-{GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO15 - SelectMAP RDWRn */  \
+{GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_0}, /* GPIO14 - SelectMAP PROGn */  \
+{GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_0}, /* GPIO15 - SelectMAP RDWRn */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO16 GMCTxD(4)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO17 GMCTxD(5)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO18 GMCTxD(6)      */  \
@@ -473,7 +471,7 @@
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_1}, /* GPIO24 GMCTxD(2)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_1}, /* GPIO25 GMCTxD(3)      */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO26 - this is a weird one, the IIC function is really set in SDR0_PFC4*/  \
-{GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_1}, /* GPIO27 EXT_EBC_REQ  USB2D_RXERROR  - PPC_GPIO[1]*/  \
+{GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_0}, /* GPIO27 EXT_EBC_REQ  USB2D_RXERROR  - PPC_GPIO[1]*/  \
 {GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_1}, /* GPIO28    USB2D_TXVALID - PPC_GPIO[0] */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO29 EBC_EXT_HDLA  USB2D_PAD_SUSPNDM - PPC_GPIO[4] (Activity LED) */  \
 {GPIO0_BASE, GPIO_BI , GPIO_SEL , GPIO_OUT_1}, /* GPIO30 EBC_EXT_ACK  USB2D_XCVRSELECT - PPC_GPIO[2]*/  \
