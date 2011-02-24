@@ -57,7 +57,6 @@ phys_size_t initdram (int board_type)
 {
 #if !(defined(CONFIG_NAND_U_BOOT) || defined(CONFIG_SYS_RAMBOOT)) || \
     defined(CONFIG_NAND_SPL)
-	ulong speed = get_bus_freq(0);
 
   /* from eye cal
   DDR0_09=0x00011d5f                                                              
