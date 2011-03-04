@@ -20,6 +20,12 @@
 
 /*DS1307 Real Time Clock*/
 #define R2_SENSOR_DS1307_U11_I2C_ADDR   0x68
+#define R2_SENSOR_DS1307_TIME           0x0
+#define R2_SENSOR_DS1307_TIME_LEN       0x7
+#define R2_SENSOR_DS1307_12HR           0x40
+
+const char* rtc_day_str[7] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+#define R2_SENSOR_DS1307_DAY(x)       ((x) >= 0 && (x) < 7 ? rtc_day_str[(x)] : "ERR")
 
 /*MAX1805 Remote temperature for V6 and PPC*/
 #define R2_SENSOR_MAX1805_U22_I2C_ADDR      0x18
