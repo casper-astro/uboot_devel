@@ -38,6 +38,7 @@
 #include <asm/arch/systimer.h>
 #include <asm/arch/sysctrl.h>
 #include <asm/arch/wdt.h>
+#include "../drivers/mmc/arm_pl180_mmci.h"
 
 static ulong timestamp;
 static ulong lastdec;
@@ -82,6 +83,15 @@ int board_eth_init(bd_t *bis)
 	int rc = 0;
 #ifdef CONFIG_SMC911X
 	rc = smc911x_initialize(0, CONFIG_SMC911X_BASE);
+#endif
+	return rc;
+}
+
+int cpu_mmc_init(bd_t *bis)
+{
+	int rc = 0;
+#ifdef CONFIG_ARM_PL180_MMCI
+	rc = arm_pl180_mmci_init();
 #endif
 	return rc;
 }

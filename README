@@ -1,5 +1,5 @@
 #
-# (C) Copyright 2000 - 2009
+# (C) Copyright 2000 - 2011
 # Wolfgang Denk, DENX Software Engineering, wd@denx.de.
 #
 # See file CREDITS for list of people who contributed to this
@@ -164,7 +164,7 @@ Directory Hierarchy:
   /blackfin		Files generic to Analog Devices Blackfin architecture
     /cpu		CPU specific files
     /lib		Architecture specific library files
-  /i386			Files generic to i386 architecture
+  /x86			Files generic to x86 architecture
     /cpu		CPU specific files
     /lib		Architecture specific library files
   /m68k			Files generic to m68k architecture
@@ -319,6 +319,11 @@ The following options need to be configured:
 			CONFIG_SYS_PQ2FADS	- PQ2FADS-ZU or PQ2FADS-VR
 			CONFIG_SYS_8272ADS	- MPC8272ADS
 
+- Marvell Family Member
+		CONFIG_SYS_MVFS		- define it if you want to enable
+					  multiple fs option at one time
+					  for marvell soc family
+
 - MPC824X Family Member (if CONFIG_MPC824X is defined)
 		Define exactly one of
 		CONFIG_MPC8240, CONFIG_MPC8245
@@ -350,6 +355,18 @@ The following options need to be configured:
 
 		Define this option if you want to enable the
 		ICache only when Code runs from RAM.
+
+- 85xx CPU Options:
+		CONFIG_SYS_FSL_TBCLK_DIV
+
+		Defines the core time base clock divider ratio compared to the
+		system clock.  On most PQ3 devices this is 8, on newer QorIQ
+		devices it can be 16 or 32.  The ratio varies from SoC to Soc.
+
+		CONFIG_SYS_FSL_PCIE_COMPAT
+
+		Defines the string to utilize when trying to match PCIe device
+		tree nodes for the given platform.
 
 - Intel Monahans options:
 		CONFIG_SYS_MONAHANS_RUN_MODE_OSC_RATIO
@@ -462,6 +479,18 @@ The following options need to be configured:
 		If you have Amba PrimeCell PL010 or PL011 UARTs on your board,
 		define this to a list of base addresses for each (supported)
 		port. See e.g. include/configs/versatile.h
+
+		CONFIG_PL011_SERIAL_RLCR
+
+		Some vendor versions of PL011 serial ports (e.g. ST-Ericsson U8500)
+		have separate receive and transmit line control registers.  Set
+		this variable to initialize the extra register.
+
+		CONFIG_PL011_SERIAL_FLUSH_ON_INIT
+
+		On some platforms (e.g. U8500) U-Boot is loaded by a second stage
+		boot loader that has already initialized the UART.  Define this
+		variable to flush the UART at init time.
 
 
 - Console Interface:
@@ -620,6 +649,7 @@ The following options need to be configured:
 		CONFIG_CMD_BOOTD	  bootd
 		CONFIG_CMD_CACHE	* icache, dcache
 		CONFIG_CMD_CONSOLE	  coninfo
+		CONFIG_CMD_CRC32	* crc32
 		CONFIG_CMD_DATE		* support for RTC, date/time...
 		CONFIG_CMD_DHCP		* DHCP support
 		CONFIG_CMD_DIAG		* Diagnostics
@@ -632,22 +662,27 @@ The following options need to be configured:
 		CONFIG_CMD_EDITENV	  edit env variable
 		CONFIG_CMD_EEPROM	* EEPROM read/write support
 		CONFIG_CMD_ELF		* bootelf, bootvx
+		CONFIG_CMD_EXPORTENV	* export the environment
 		CONFIG_CMD_SAVEENV	  saveenv
 		CONFIG_CMD_FDC		* Floppy Disk Support
 		CONFIG_CMD_FAT		* FAT partition support
 		CONFIG_CMD_FDOS		* Dos diskette Support
 		CONFIG_CMD_FLASH	  flinfo, erase, protect
 		CONFIG_CMD_FPGA		  FPGA device initialization support
+		CONFIG_CMD_GO		* the 'go' command (exec code)
+		CONFIG_CMD_GREPENV	* search environment
 		CONFIG_CMD_HWFLOW	* RTS/CTS hw flow control
 		CONFIG_CMD_I2C		* I2C serial bus support
 		CONFIG_CMD_IDE		* IDE harddisk support
 		CONFIG_CMD_IMI		  iminfo
 		CONFIG_CMD_IMLS		  List all found images
 		CONFIG_CMD_IMMAP	* IMMR dump support
+		CONFIG_CMD_IMPORTENV	* import an environment
 		CONFIG_CMD_IRQ		* irqinfo
 		CONFIG_CMD_ITEST	  Integer/string test of 2 values
 		CONFIG_CMD_JFFS2	* JFFS2 Support
 		CONFIG_CMD_KGDB		* kgdb
+		CONFIG_CMD_LDRINFO	  ldrinfo (display Blackfin loader)
 		CONFIG_CMD_LOADB	  loadb
 		CONFIG_CMD_LOADS	  loads
 		CONFIG_CMD_MD5SUM	  print md5 message digest
@@ -679,6 +714,7 @@ The following options need to be configured:
 					  (requires CONFIG_CMD_MEMORY)
 		CONFIG_CMD_SOURCE	  "source" command Support
 		CONFIG_CMD_SPI		* SPI serial bus support
+		CONFIG_CMD_TFTPSRV	* TFTP transfer in server mode
 		CONFIG_CMD_USB		* USB support
 		CONFIG_CMD_VFD		* VFD support (TRAB)
 		CONFIG_CMD_CDP		* Cisco Discover Protocol support
@@ -709,10 +745,17 @@ The following options need to be configured:
 - Watchdog:
 		CONFIG_WATCHDOG
 		If this variable is defined, it enables watchdog
-		support. There must be support in the platform specific
-		code for a watchdog. For the 8xx and 8260 CPUs, the
-		SIU Watchdog feature is enabled in the SYPCR
-		register.
+		support for the SoC. There must be support in the SoC
+		specific code for a watchdog. For the 8xx and 8260
+		CPUs, the SIU Watchdog feature is enabled in the SYPCR
+		register.  When supported for a specific SoC is
+		available, then no further board specific code should
+		be needed to use it.
+
+		CONFIG_HW_WATCHDOG
+		When using a watchdog circuitry external to the used
+		SoC, then define this variable and provide board
+		specific code for the "hw_watchdog_reset" function.
 
 - U-Boot Version:
 		CONFIG_VERSION_VARIABLE
@@ -738,6 +781,8 @@ The following options need to be configured:
 		CONFIG_RTC_ISL1208	- use Intersil ISL1208 RTC
 		CONFIG_RTC_MAX6900	- use Maxim, Inc. MAX6900 RTC
 		CONFIG_SYS_RTC_DS1337_NOOSC	- Turn off the OSC output for DS1337
+		CONFIG_SYS_RV3029_TCR	- enable trickle charger on
+					  RV3029 RTC.
 
 		Note that if the RTC uses I2C, then the I2C interface
 		must also be configured. See I2C Support, below.
@@ -1069,6 +1114,25 @@ The following options need to be configured:
 		and 16bpp modes defined by CONFIG_VIDEO_SED13806_8BPP
 		or CONFIG_VIDEO_SED13806_16BPP
 
+		CONFIG_FSL_DIU_FB
+		Enable the Freescale DIU video driver.  Reference boards for
+		SOCs that have a DIU should define this macro to enable DIU
+		support, and should also define these other macros:
+
+			CONFIG_SYS_DIU_ADDR
+			CONFIG_VIDEO
+			CONFIG_CMD_BMP
+			CONFIG_CFB_CONSOLE
+			CONFIG_VIDEO_SW_CURSOR
+			CONFIG_VGA_AS_SINGLE_DEVICE
+			CONFIG_VIDEO_LOGO
+			CONFIG_VIDEO_BMP_LOGO
+
+		The DIU driver will look for the 'video-mode' environment
+		variable, and if defined, enable the DIU as a console during
+		boot.  See the documentation file README.video for a
+		description of this variable.
+
 - Keyboard Support:
 		CONFIG_KEYBOARD
 
@@ -1271,7 +1335,6 @@ The following options need to be configured:
 		driver in use must provide a function: mcast() to join/leave a
 		multicast group.
 
-		CONFIG_BOOTP_RANDOM_DELAY
 - BOOTP Recovery Mode:
 		CONFIG_BOOTP_RANDOM_DELAY
 
@@ -1969,6 +2032,28 @@ The following options need to be configured:
 		example, some LED's) on your board. At the moment,
 		the following checkpoints are implemented:
 
+- Standalone program support:
+		CONFIG_STANDALONE_LOAD_ADDR
+
+		This option allows to define board specific values
+		for the address where standalone program gets loaded,
+		thus overwriting the architecutre dependent default
+		settings.
+
+- Frame Buffer Address:
+	CONFIG_FB_ADDR
+
+	Define CONFIG_FB_ADDR if you want to use specific address for
+	frame buffer.
+	Then system will reserve the frame buffer address to defined address
+	instead of lcd_setmem (this function grab the memory for frame buffer
+	by panel's size).
+
+	Please see board_init_f function.
+
+	If you want this config option then,
+	please define it at your board config file
+
 Legacy uImage format:
 
   Arg	Where			When
@@ -2306,7 +2391,10 @@ Configuration Settings:
 		used) must be put below this limit, unless "bootm_low"
 		enviroment variable is defined and non-zero. In such case
 		all data for the Linux kernel must be between "bootm_low"
-		and "bootm_low" + CONFIG_SYS_BOOTMAPSZ.
+		and "bootm_low" + CONFIG_SYS_BOOTMAPSZ.  The environment
+		variable "bootm_mapsize" will override the value of
+		CONFIG_SYS_BOOTMAPSZ.  If CONFIG_SYS_BOOTMAPSZ is undefined,
+		then the value in "bootm_size" will be used instead.
 
 - CONFIG_SYS_BOOT_RAMDISK_HIGH:
 		Enable initrd_high functionality.  If defined then the
@@ -2694,6 +2782,14 @@ Low Level (hardware related) configuration options:
 		source code. It is used to make hardware dependant
 		initializations.
 
+- CONFIG_IDE_AHB:
+		Most IDE controllers were designed to be connected with PCI
+		interface. Only few of them were designed for AHB interface.
+		When software is doing ATA command and data transfer to
+		IDE devices through IDE-AHB controller, some additional
+		registers accessing to these kind of IDE-AHB controller
+		is requierd.
+
 - CONFIG_SYS_IMMR:	Physical address of the Internal Memory.
 		DO NOT CHANGE unless you know exactly what you're
 		doing! (11-4) [MPC8xx/82xx systems only]
@@ -2901,6 +2997,12 @@ Low Level (hardware related) configuration options:
 		Modifies the behaviour of start.S when compiling a loader
 		that is executed before the actual U-Boot. E.g. when
 		compiling a NAND SPL.
+
+- CONFIG_USE_ARCH_MEMCPY
+  CONFIG_USE_ARCH_MEMSET
+		If these options are used a optimized version of memcpy/memset will
+		be used if available. These functions may be faster under some
+		conditions but may increase the binary size.
 
 Building the Software:
 ======================
@@ -3142,7 +3244,16 @@ List of environment variables (most likely not complete):
 		  for use by the bootm command. See also "bootm_size"
 		  environment variable. Address defined by "bootm_low" is
 		  also the base of the initial memory mapping for the Linux
-		  kernel -- see the description of CONFIG_SYS_BOOTMAPSZ.
+		  kernel -- see the description of CONFIG_SYS_BOOTMAPSZ and
+		  bootm_mapsize.
+
+  bootm_mapsize	- Size of the initial memory mapping for the Linux kernel.
+		  This variable is given as a hexadecimal number and it
+		  defines the size of the memory region starting at base
+		  address bootm_low that is accessible by the Linux kernel
+		  during early boot.  If unset, CONFIG_SYS_BOOTMAPSZ is used
+		  as the default value if it is defined, and bootm_size is
+		  used otherwise.
 
   bootm_size	- Memory range available for image processing in the bootm
 		  command can be restricted. This variable is given as

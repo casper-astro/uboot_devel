@@ -1,5 +1,5 @@
 /*
- * Copyright 2007-2010 Freescale Semiconductor, Inc.
+ * Copyright 2007-2011 Freescale Semiconductor, Inc.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
@@ -223,6 +223,7 @@ void fsl_pci_init(struct pci_controller *hose, struct fsl_pci_info *pci_info)
 	u32 cfg_data = (u32)&((ccsr_fsl_pci_t *)pci_info->regs)->cfg_data;
 	u16 temp16;
 	u32 temp32;
+	u32 block_rev;
 	int enabled, r, inbound = 0;
 	u16 ltssm;
 	u8 temp8, pcie_cap;
@@ -232,12 +233,19 @@ void fsl_pci_init(struct pci_controller *hose, struct fsl_pci_info *pci_info)
 
 	/* Initialize ATMU registers based on hose regions and flags */
 	volatile pot_t *po = &pci->pot[1];	/* skip 0 */
-	volatile pit_t *pi = &pci->pit[2];	/* ranges from: 3 to 1 */
+	volatile pit_t *pi;
 
 	u64 out_hi = 0, out_lo = -1ULL;
 	u32 pcicsrbar, pcicsrbar_sz;
 
 	pci_setup_indirect(hose, cfg_addr, cfg_data);
+
+	block_rev = in_be32(&pci->block_rev1);
+	if (PEX_IP_BLK_REV_2_2 <= block_rev) {
+		pi = &pci->pit[2];	/* 0xDC0 */
+	} else {
+		pi = &pci->pit[3];	/* 0xDE0 */
+	}
 
 	/* Handle setup of outbound windows first */
 	for (r = 0; r < hose->region_count; r++) {
@@ -317,6 +325,13 @@ void fsl_pci_init(struct pci_controller *hose, struct fsl_pci_info *pci_info)
 	temp32 |= 0xf000e;		/* set URR, FER, NFER (but not CER) */
 	pci_hose_write_config_dword(hose, dev, PCI_DCR, temp32);
 
+#if defined(CONFIG_FSL_PCIE_DISABLE_ASPM)
+	temp32 = 0;
+	pci_hose_read_config_dword(hose, dev, PCI_LCR, &temp32);
+	temp32 &= ~0x03;		/* Disable ASPM  */
+	pci_hose_write_config_dword(hose, dev, PCI_LCR, temp32);
+	udelay(1);
+#endif
 	if (pcie_cap == PCI_CAP_ID_EXP) {
 		pci_hose_read_config_word(hose, dev, PCI_LTSSM, &ltssm);
 		enabled = ltssm >= PCI_LTSSM_L0;

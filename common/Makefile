@@ -98,6 +98,7 @@ COBJS-$(CONFIG_CMD_FLASH) += cmd_flash.o
 ifdef CONFIG_FPGA
 COBJS-$(CONFIG_CMD_FPGA) += cmd_fpga.o
 endif
+COBJS-$(CONFIG_CMD_GPIO) += cmd_gpio.o
 COBJS-$(CONFIG_CMD_I2C) += cmd_i2c.o
 COBJS-$(CONFIG_CMD_IDE) += cmd_ide.o
 COBJS-$(CONFIG_CMD_IMMAP) += cmd_immap.o
@@ -105,18 +106,25 @@ COBJS-$(CONFIG_CMD_IRQ) += cmd_irq.o
 COBJS-$(CONFIG_CMD_ITEST) += cmd_itest.o
 COBJS-$(CONFIG_CMD_JFFS2) += cmd_jffs2.o
 COBJS-$(CONFIG_CMD_CRAMFS) += cmd_cramfs.o
+COBJS-$(CONFIG_CMD_LDRINFO) += cmd_ldrinfo.o
 COBJS-$(CONFIG_CMD_LICENSE) += cmd_license.o
 COBJS-y += cmd_load.o
 COBJS-$(CONFIG_LOGBUFFER) += cmd_log.o
 COBJS-$(CONFIG_ID_EEPROM) += cmd_mac.o
+COBJS-$(CONFIG_CMD_MD5SUM) += cmd_md5sum.o
 COBJS-$(CONFIG_CMD_MEMORY) += cmd_mem.o
 COBJS-$(CONFIG_CMD_MFSL) += cmd_mfsl.o
 COBJS-$(CONFIG_CMD_MG_DISK) += cmd_mgdisk.o
 COBJS-$(CONFIG_MII) += miiphyutil.o
 COBJS-$(CONFIG_CMD_MII) += miiphyutil.o
+COBJS-$(CONFIG_PHYLIB) += miiphyutil.o
 COBJS-$(CONFIG_CMD_MII) += cmd_mii.o
+ifdef CONFIG_PHYLIB
+COBJS-$(CONFIG_CMD_MII) += cmd_mdio.o
+endif
 COBJS-$(CONFIG_CMD_MISC) += cmd_misc.o
 COBJS-$(CONFIG_CMD_MMC) += cmd_mmc.o
+COBJS-$(CONFIG_CMD_MMC_SPI) += cmd_mmc_spi.o
 COBJS-$(CONFIG_MP) += cmd_mp.o
 COBJS-$(CONFIG_CMD_MTDPARTS) += cmd_mtdparts.o
 COBJS-$(CONFIG_CMD_NAND) += cmd_nand.o
@@ -133,6 +141,7 @@ COBJS-$(CONFIG_CMD_REISER) += cmd_reiser.o
 COBJS-$(CONFIG_CMD_SATA) += cmd_sata.o
 COBJS-$(CONFIG_CMD_SF) += cmd_sf.o
 COBJS-$(CONFIG_CMD_SCSI) += cmd_scsi.o
+COBJS-$(CONFIG_CMD_SHA1SUM) += cmd_sha1sum.o
 COBJS-$(CONFIG_CMD_SETEXPR) += cmd_setexpr.o
 COBJS-$(CONFIG_CMD_SPI) += cmd_spi.o
 COBJS-$(CONFIG_CMD_SPIBOOTLDR) += cmd_spibootldr.o
@@ -143,6 +152,7 @@ COBJS-$(CONFIG_CMD_TSI148) += cmd_tsi148.o
 COBJS-$(CONFIG_CMD_UBI) += cmd_ubi.o
 COBJS-$(CONFIG_CMD_UBIFS) += cmd_ubifs.o
 COBJS-$(CONFIG_CMD_UNIVERSE) += cmd_universe.o
+COBJS-$(CONFIG_CMD_UNZIP) += cmd_unzip.o
 ifdef CONFIG_CMD_USB
 COBJS-y += cmd_usb.o
 COBJS-y += usb.o

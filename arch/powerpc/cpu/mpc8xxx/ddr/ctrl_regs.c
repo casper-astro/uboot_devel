@@ -236,9 +236,12 @@ static void set_timing_cfg_0(fsl_ddr_cfg_regs_t *ddr,
 	 * tAXPD=1, need design to confirm.
 	 */
 	int tXP = max((get_memory_clk_period_ps() * 3), 7500); /* unit=ps */
+	unsigned int data_rate = get_ddr_freq(0);
 	tmrd_mclk = 4;
 	/* set the turnaround time */
 	trwt_mclk = 1;
+	if ((data_rate/1000000 > 1150) || (popts->memctl_interleaving))
+		twrt_mclk = 1;
 
 	if (popts->dynamic_power == 0) {	/* powerdown is not used */
 		act_pd_exit_mclk = 1;
@@ -330,6 +333,9 @@ static void set_timing_cfg_1(fsl_ddr_cfg_regs_t *ddr,
 	unsigned char acttoact_mclk;
 	/* Last write data pair to read command issue interval (tWTR) */
 	unsigned char wrtord_mclk;
+	/* DDR_SDRAM_MODE doesn't support 9,11,13,15 */
+	static const u8 wrrec_table[] = {
+		1, 2, 3, 4, 5, 6, 7, 8, 10, 10, 12, 12, 14, 14, 0, 0};
 
 	pretoact_mclk = picos_to_mclk(common_dimm->tRP_ps);
 	acttopre_mclk = picos_to_mclk(common_dimm->tRAS_ps);
@@ -368,6 +374,8 @@ static void set_timing_cfg_1(fsl_ddr_cfg_regs_t *ddr,
 
 	refrec_ctrl = picos_to_mclk(common_dimm->tRFC_ps) - 8;
 	wrrec_mclk = picos_to_mclk(common_dimm->tWR_ps);
+
+	wrrec_mclk = wrrec_table[wrrec_mclk - 1];
 	if (popts->OTF_burst_chop_en)
 		wrrec_mclk += 2;
 
@@ -674,7 +682,9 @@ static void set_ddr_sdram_cfg_2(fsl_ddr_cfg_regs_t *ddr,
 		| ((obc_cfg & 0x1) << 6)
 		| ((ap_en & 0x1) << 5)
 		| ((d_init & 0x1) << 4)
+#ifdef CONFIG_FSL_DDR3
 		| ((rcw_en & 0x1) << 2)
+#endif
 		| ((md_en & 0x1) << 0)
 		);
 	debug("FSLDDR: ddr_sdram_cfg_2 = 0x%08x\n", ddr->ddr_sdram_cfg_2);
@@ -807,6 +817,12 @@ static void set_ddr_sdram_mode(fsl_ddr_cfg_regs_t *ddr,
 	unsigned int bl;	/* BL: Burst Length */
 
 	unsigned int wr_mclk;
+	/*
+	 * DDR_SDRAM_MODE doesn't support 9,11,13,15
+	 * Please refer JEDEC Standard No. 79-3E for Mode Register MR0
+	 * for this table
+	 */
+	static const u8 wr_table[] = {1, 2, 3, 4, 5, 5, 6, 6, 7, 7, 0, 0};
 
 	const unsigned int mclk_ps = get_memory_clk_period_ps();
 	int i;
@@ -850,13 +866,10 @@ static void set_ddr_sdram_mode(fsl_ddr_cfg_regs_t *ddr,
 	 * 1=fast exit DLL on (tXP)
 	 */
 	dll_on = 1;
+
 	wr_mclk = (common_dimm->tWR_ps + mclk_ps - 1) / mclk_ps;
-	if (wr_mclk >= 12)
-		wr = 6;
-	else if (wr_mclk >= 9)
-		wr = 5;
-	else
-		wr = wr_mclk - 4;
+	wr = wr_table[wr_mclk - 5];
+
 	dll_rst = 0;	/* dll no reset */
 	mode = 0;	/* normal mode */
 
@@ -1292,7 +1305,7 @@ static void set_ddr_eor(fsl_ddr_cfg_regs_t *ddr, const memctl_options_t *popts)
 {
 	if (popts->addr_hash) {
 		ddr->ddr_eor = 0x40000000;	/* address hash enable */
-		puts("Addess hashing enabled.\n");
+		puts("Address hashing enabled.\n");
 	}
 }
 

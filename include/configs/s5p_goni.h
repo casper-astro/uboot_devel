@@ -56,7 +56,6 @@
  * 1MB = 0x100000, 0x100000 = 1024 * 1024
  */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (1 << 20))
-						/* initial data */
 /*
  * select serial console configuration
  */
@@ -68,6 +67,9 @@
 #define CONFIG_GENERIC_MMC		1
 #define CONFIG_MMC			1
 #define CONFIG_S5P_MMC			1
+
+/* PWM */
+#define CONFIG_PWM			1
 
 /* It should define before config_cmd_default.h */
 #define CONFIG_SYS_NO_FLASH		1

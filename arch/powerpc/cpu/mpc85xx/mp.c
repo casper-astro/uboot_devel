@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 Freescale Semiconductor, Inc.
+ * Copyright 2008-2011 Freescale Semiconductor, Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -276,8 +276,13 @@ static void plat_mp_up(unsigned long bootpg)
 
 	/* enable time base at the platform */
 	out_be32(&rcpm->ctbenrl, 0);
+
+	/* readback to sync write */
+	in_be32(&rcpm->ctbenrl);
+
 	mtspr(SPRN_TBWU, 0);
 	mtspr(SPRN_TBWL, 0);
+
 	out_be32(&rcpm->ctbenrl, (1 << nr_cpus) - 1);
 
 #ifdef CONFIG_MPC8xxx_DISABLE_BPTR
@@ -288,7 +293,7 @@ static void plat_mp_up(unsigned long bootpg)
 	 * unusable for normal operation but it does allow OSes to easily
 	 * reset a processor core to put it back into U-Boot's spinloop.
 	 */
-	clrbits_be32(&ecm->bptr, 0x80000000);
+	clrbits_be32(&ccm->bstrar, LAW_EN);
 #endif
 }
 #else
@@ -347,6 +352,10 @@ static void plat_mp_up(unsigned long bootpg)
 	else
 		devdisr |= MPC85xx_DEVDISR_TB0;
 	out_be32(&gur->devdisr, devdisr);
+
+	/* readback to sync write */
+	in_be32(&gur->devdisr);
+
 	mtspr(SPRN_TBWU, 0);
 	mtspr(SPRN_TBWL, 0);
 

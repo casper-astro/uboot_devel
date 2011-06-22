@@ -123,7 +123,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #endif
 
 extern ulong __init_end;
-extern ulong _end;
+extern ulong __bss_end__;
 ulong monitor_flash_len;
 
 #if defined(CONFIG_CMD_BEDBUG)
@@ -185,6 +185,12 @@ int __board_flash_wp_on(void)
 	return 0;
 }
 int board_flash_wp_on(void) __attribute__((weak, alias("__board_flash_wp_on")));
+
+void __cpu_secondary_init_r(void)
+{
+}
+void cpu_secondary_init_r(void)
+__attribute__((weak, alias("__cpu_secondary_init_r")));
 
 static int init_func_ram (void)
 {
@@ -403,7 +409,7 @@ void board_init_f (ulong bootflag)
 	 *  - monitor code
 	 *  - board info struct
 	 */
-	len = (ulong)&_end - CONFIG_SYS_MONITOR_BASE;
+	len = (ulong)&__bss_end__ - CONFIG_SYS_MONITOR_BASE;
 
 	/*
 	 * Subtract specified amount of memory to hide so that it won't
@@ -453,9 +459,13 @@ void board_init_f (ulong bootflag)
 	debug ("Top of RAM usable for U-Boot at: %08lx\n", addr);
 
 #ifdef CONFIG_LCD
+#ifdef CONFIG_FB_ADDR
+	gd->fb_base = CONFIG_FB_ADDR;
+#else
 	/* reserve memory for LCD display (always full pages) */
 	addr = lcd_setmem (addr);
 	gd->fb_base = addr;
+#endif /* CONFIG_FB_ADDR */
 #endif /* CONFIG_LCD */
 
 #if defined(CONFIG_VIDEO) && defined(CONFIG_8xx)
@@ -796,6 +806,14 @@ void board_init_r (gd_t *id, ulong dest_addr)
 
 	/* relocate environment function pointers etc. */
 	env_relocate ();
+
+	/*
+	 * after non-volatile devices & environment is setup and cpu code have
+	 * another round to deal with any initialization that might require
+	 * full access to the environment or loading of some image (firmware)
+	 * from a non-volatile device
+	 */
+	cpu_secondary_init_r();
 
 	/*
 	 * Fill in missing fields of bd_info.

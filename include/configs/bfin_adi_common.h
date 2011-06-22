@@ -34,9 +34,13 @@
 #  define CONFIG_DOS_PARTITION
 # endif
 # ifdef CONFIG_MMC
+#  define CONFIG_CMD_EXT2
 #  define CONFIG_CMD_FAT
 #  define CONFIG_CMD_MMC
 #  define CONFIG_DOS_PARTITION
+# endif
+# ifdef CONFIG_MMC_SPI
+#  define CONFIG_CMD_MMC_SPI
 # endif
 # ifdef CONFIG_USB
 #  define CONFIG_CMD_EXT2
@@ -85,9 +89,9 @@
 # define CONFIG_CMD_CACHE
 # define CONFIG_CMD_CPLBINFO
 # define CONFIG_CMD_ELF
-# define CONFIG_ELF_SIMPLE_LOAD
 # define CONFIG_CMD_GPIO
 # define CONFIG_CMD_KGDB
+# define CONFIG_CMD_LDRINFO
 # define CONFIG_CMD_REGINFO
 # define CONFIG_CMD_STRINGS
 # if defined(__ADSPBF51x__) || defined(__ADSPBF52x__) || defined(__ADSPBF54x__)
@@ -273,6 +277,7 @@
  */
 #ifdef CONFIG_SPI_FLASH_ALL
 # define CONFIG_SPI_FLASH_ATMEL
+# define CONFIG_SPI_FLASH_EON
 # define CONFIG_SPI_FLASH_MACRONIX
 # define CONFIG_SPI_FLASH_SPANSION
 # define CONFIG_SPI_FLASH_SST
@@ -300,5 +305,6 @@
 #endif
 #define CONFIG_BFIN_SPI_GPIO_CS /* Only matters if BFIN_SPI is enabled */
 #define CONFIG_LZMA
+#define CONFIG_MONITOR_IS_IN_RAM
 
 #endif

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Albert ARIBAUD <albert.aribaud@free.fr>
+ * Copyright (C) 2010 Albert ARIBAUD <albert.u.boot@aribaud.net>
  *
  * Based on original Kirkwood support which is
  * (C) Copyright 2009
@@ -204,7 +204,6 @@
  * Size of malloc() pool
  */
 #define CONFIG_SYS_MALLOC_LEN	(1024 * 128) /* 128kB for malloc() */
-/* size in bytes reserved for initial data */
 
 /*
  * Other required minimal configurations

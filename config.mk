@@ -117,6 +117,7 @@ RANLIB	= $(CROSS_COMPILE)RANLIB
 
 # Load generated board configuration
 sinclude $(OBJTREE)/include/autoconf.mk
+sinclude $(OBJTREE)/include/config.mk
 
 # Some architecture config.mk files need to know what CPUDIR is set to,
 # so calculate CPUDIR before including ARCH/SOC/CPU config.mk files.
@@ -152,14 +153,37 @@ endif
 RELFLAGS= $(PLATFORM_RELFLAGS)
 DBGFLAGS= -g #-DDEBUG
 OPTFLAGS= -Os #-fomit-frame-pointer
+
+# If board code explicitly specified LDSCRIPT or CONFIG_SYS_LDSCRIPT, use
+# that (or fail if absent).  Otherwise, search for a linker script in a
+# standard location.
+
 ifndef LDSCRIPT
-#LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot.lds.debug
-ifeq ($(CONFIG_NAND_U_BOOT),y)
-LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot-nand.lds
-else
-LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot.lds
+	#LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot.lds.debug
+	ifdef CONFIG_SYS_LDSCRIPT
+		# need to strip off double quotes
+		LDSCRIPT := $(subst ",,$(CONFIG_SYS_LDSCRIPT))
+	endif
 endif
+
+ifndef LDSCRIPT
+	ifeq ($(CONFIG_NAND_U_BOOT),y)
+		LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot-nand.lds
+		ifeq ($(wildcard $(LDSCRIPT)),)
+			LDSCRIPT := $(TOPDIR)/$(CPUDIR)/u-boot-nand.lds
+		endif
+	endif
+	ifeq ($(wildcard $(LDSCRIPT)),)
+		LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot.lds
+	endif
+	ifeq ($(wildcard $(LDSCRIPT)),)
+		LDSCRIPT := $(TOPDIR)/$(CPUDIR)/u-boot.lds
+	endif
+	ifeq ($(wildcard $(LDSCRIPT)),)
+$(error could not find linker script)
+	endif
 endif
+
 OBJCFLAGS += --gap-fill=0xff
 
 gccincdir := $(shell $(CC) -print-file-name=include)
@@ -205,8 +229,9 @@ endif
 AFLAGS := $(AFLAGS_DEBUG) -D__ASSEMBLY__ $(CPPFLAGS)
 
 LDFLAGS += $(PLATFORM_LDFLAGS)
+LDFLAGS_FINAL += -Bstatic
 
-LDFLAGS_u-boot += -Bstatic -T $(obj)u-boot.lds $(PLATFORM_LDFLAGS)
+LDFLAGS_u-boot += -T $(obj)u-boot.lds $(LDFLAGS_FINAL)
 ifneq ($(CONFIG_SYS_TEXT_BASE),)
 LDFLAGS_u-boot += -Ttext $(CONFIG_SYS_TEXT_BASE)
 endif

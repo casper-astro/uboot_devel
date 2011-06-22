@@ -60,6 +60,8 @@
 #define CONFIG_INITRD_TAG		1
 #define CONFIG_REVISION_TAG		1
 
+#define CONFIG_OF_LIBFDT		1
+
 /*
  * Size of malloc() pool
  * Total Size Environment - 256k
@@ -67,7 +69,6 @@
  */
 #define CONFIG_ENV_SIZE			(256 << 10)
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (256 << 10))
-						/* initial data */
 /* Vector Base */
 #define CONFIG_SYS_CA9_VECTOR_BASE	SRAM_ROM_VECT_BASE
 

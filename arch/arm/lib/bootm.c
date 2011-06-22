@@ -178,7 +178,6 @@ static int bootm_linux_fdt(int machid, bootm_headers_t *images)
 {
 	ulong rd_len;
 	void (*kernel_entry)(int zero, int dt_machid, void *dtblob);
-	ulong bootmap_base = getenv_bootm_low();
 	ulong of_size = images->ft_len;
 	char **of_flat_tree = &images->ft_addr;
 	ulong *initrd_start = &images->initrd_start;
@@ -188,13 +187,15 @@ static int bootm_linux_fdt(int machid, bootm_headers_t *images)
 
 	kernel_entry = (void (*)(int, int, void *))images->ep;
 
+	boot_fdt_add_mem_rsv_regions(lmb, *of_flat_tree);
+
 	rd_len = images->rd_end - images->rd_start;
 	ret = boot_ramdisk_high(lmb, images->rd_start, rd_len,
 				initrd_start, initrd_end);
 	if (ret)
 		return ret;
 
-	ret = boot_relocate_fdt(lmb, bootmap_base, of_flat_tree, &of_size);
+	ret = boot_relocate_fdt(lmb, of_flat_tree, &of_size);
 	if (ret)
 		return ret;
 
@@ -327,12 +328,12 @@ void setup_revision_tag(struct tag **in_params)
 }
 #endif  /* CONFIG_REVISION_TAG */
 
-
 static void setup_end_tag (bd_t *bd)
 {
 	params->hdr.tag = ATAG_NONE;
 	params->hdr.size = 0;
 }
+#endif /* CONFIG_SETUP_MEMORY_TAGS || CONFIG_CMDLINE_TAG || CONFIG_INITRD_TAG */
 
 static ulong get_sp(void)
 {
@@ -341,5 +342,3 @@ static ulong get_sp(void)
 	asm("mov %0, sp" : "=r"(ret) : );
 	return ret;
 }
-
-#endif /* CONFIG_SETUP_MEMORY_TAGS || CONFIG_CMDLINE_TAG || CONFIG_INITRD_TAG */

@@ -254,7 +254,7 @@ int usb_stor_scan(int mode)
 		dev = usb_get_dev_index(i); /* get device */
 		USB_STOR_PRINTF("i=%d\n", i);
 		if (dev == NULL)
-			break; /* no more devices avaiable */
+			break; /* no more devices available */
 
 		if (usb_storage_probe(dev, 0, &usb_stor[usb_max_devs])) {
 			/* OK, it's a storage device.  Iterate over its LUNs
@@ -1345,31 +1345,6 @@ int usb_stor_get_info(struct usb_device *dev, struct us_data *ss,
 	unsigned long cap[2];
 	unsigned long *capacity, *blksz;
 	ccb *pccb = &usb_ccb;
-
-	/* for some reasons a couple of devices would not survive this reset */
-	if (
-	    /* Sony USM256E */
-	    (dev->descriptor.idVendor == 0x054c &&
-	     dev->descriptor.idProduct == 0x019e)
-	    ||
-	    /* USB007 Mini-USB2 Flash Drive */
-	    (dev->descriptor.idVendor == 0x066f &&
-	     dev->descriptor.idProduct == 0x2010)
-	    ||
-	    /* SanDisk Corporation Cruzer Micro 20044318410546613953 */
-	    (dev->descriptor.idVendor == 0x0781 &&
-	     dev->descriptor.idProduct == 0x5151)
-	    ||
-	    /*
-	     * SanDisk Corporation U3 Cruzer Micro 1/4GB
-	     * Flash Drive 000016244373FFB4
-	     */
-	    (dev->descriptor.idVendor == 0x0781 &&
-	     dev->descriptor.idProduct == 0x5406)
-	    )
-		USB_STOR_PRINTF("usb_stor_get_info: skipping RESET..\n");
-	else
-		ss->transport_reset(ss);
 
 	pccb->pdata = usb_stor_buf;
 

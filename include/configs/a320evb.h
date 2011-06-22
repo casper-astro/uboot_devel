@@ -32,6 +32,11 @@
 #undef CONFIG_SKIP_LOWLEVEL_INIT
 
 /*-----------------------------------------------------------------------
+ * Power Management Unit
+ */
+#define CONFIG_FTPMU010_POWER
+
+/*-----------------------------------------------------------------------
  * Timer
  */
 #define CONFIG_SYS_HZ		1000	/* timer ticks per second */
@@ -108,10 +113,6 @@
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 128 * 1024)
 
 /*-----------------------------------------------------------------------
- * size in bytes reserved for initial data
-*/
-
-/*-----------------------------------------------------------------------
  * SDRAM controller configuration
  */
 #define CONFIG_SYS_FTSDMC020_TP0	(FTSDMC020_TP0_TRAS(2) |	\
@@ -158,7 +159,8 @@
  * Static memory controller configuration
  */
 
-#include <asm/arch/ftsmc020.h>
+#define CONFIG_FTSMC020
+#include <faraday/ftsmc020.h>
 
 #define FTSMC020_BANK0_CONFIG	(FTSMC020_BANK_ENABLE             |	\
 				 FTSMC020_BANK_BASE(PHYS_FLASH_1) |	\

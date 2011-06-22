@@ -54,8 +54,6 @@
 #define SPSN_EXT_ID_S25FL128P_64KB	0x0301
 #define SPSN_EXT_ID_S25FL032P		0x4d00
 
-#define SPANSION_SR_WIP		(1 << 0)	/* Write-in-Progress */
-
 struct spansion_spi_flash_params {
 	u16 idcode1;
 	u16 idcode2;
@@ -135,56 +133,6 @@ static const struct spansion_spi_flash_params spansion_spi_flash_table[] = {
 	},
 };
 
-static int spansion_wait_ready(struct spi_flash *flash, unsigned long timeout)
-{
-	struct spi_slave *spi = flash->spi;
-	unsigned long timebase;
-	int ret;
-	u8 status;
-
-	timebase = get_timer(0);
-	do {
-		ret = spi_flash_cmd(spi, CMD_S25FLXX_RDSR, &status, sizeof(status));
-		if (ret)
-			return -1;
-
-		if ((status & SPANSION_SR_WIP) == 0)
-			break;
-
-	} while (get_timer(timebase) < timeout);
-
-
-	if ((status & SPANSION_SR_WIP) == 0)
-		return 0;
-
-	/* Timed out */
-	return -1;
-}
-
-static int spansion_read_fast(struct spi_flash *flash,
-			     u32 offset, size_t len, void *buf)
-{
-	struct spansion_spi_flash *spsn = to_spansion_spi_flash(flash);
-	unsigned long page_addr;
-	unsigned long page_size;
-	u8 cmd[5];
-
-	page_size = spsn->params->page_size;
-	page_addr = offset / page_size;
-
-	cmd[0] = CMD_READ_ARRAY_FAST;
-	cmd[1] = page_addr >> 8;
-	cmd[2] = page_addr;
-	cmd[3] = offset % page_size;
-	cmd[4] = 0x00;
-
-	debug
-		("READ: 0x%x => cmd = { 0x%02x 0x%02x%02x%02x%02x } len = 0x%x\n",
-		 offset, cmd[0], cmd[1], cmd[2], cmd[3], cmd[4], len);
-
-	return spi_flash_read_common(flash, cmd, sizeof(cmd), buf, len);
-}
-
 static int spansion_write(struct spi_flash *flash,
 			 u32 offset, size_t len, const void *buf)
 {
@@ -233,11 +181,9 @@ static int spansion_write(struct spi_flash *flash,
 			break;
 		}
 
-		ret = spansion_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
-		if (ret < 0) {
-			debug("SF: SPANSION page programming timed out\n");
+		ret = spi_flash_cmd_wait_ready(flash, SPI_FLASH_PROG_TIMEOUT);
+		if (ret)
 			break;
-		}
 
 		page_addr++;
 		byte_addr = 0;
@@ -250,66 +196,9 @@ static int spansion_write(struct spi_flash *flash,
 	return ret;
 }
 
-int spansion_erase(struct spi_flash *flash, u32 offset, size_t len)
+static int spansion_erase(struct spi_flash *flash, u32 offset, size_t len)
 {
-	struct spansion_spi_flash *spsn = to_spansion_spi_flash(flash);
-	unsigned long sector_size;
-	size_t actual;
-	int ret;
-	u8 cmd[4];
-
-	/*
-	 * This function currently uses sector erase only.
-	 * probably speed things up by using bulk erase
-	 * when possible.
-	 */
-
-	sector_size = spsn->params->page_size * spsn->params->pages_per_sector;
-
-	if (offset % sector_size || len % sector_size) {
-		debug("SF: Erase offset/length not multiple of sector size\n");
-		return -1;
-	}
-
-	cmd[0] = CMD_S25FLXX_SE;
-	cmd[2] = 0x00;
-	cmd[3] = 0x00;
-
-	ret = spi_claim_bus(flash->spi);
-	if (ret) {
-		debug("SF: Unable to claim SPI bus\n");
-		return ret;
-	}
-
-	ret = 0;
-	for (actual = 0; actual < len; actual += sector_size) {
-		cmd[1] = (offset + actual) >> 16;
-
-		ret = spi_flash_cmd(flash->spi, CMD_S25FLXX_WREN, NULL, 0);
-		if (ret < 0) {
-			debug("SF: Enabling Write failed\n");
-			break;
-		}
-
-		ret = spi_flash_cmd_write(flash->spi, cmd, 4, NULL, 0);
-		if (ret < 0) {
-			debug("SF: SPANSION page erase failed\n");
-			break;
-		}
-
-		/* Up to 2 seconds */
-		ret = spansion_wait_ready(flash, SPI_FLASH_PAGE_ERASE_TIMEOUT);
-		if (ret < 0) {
-			debug("SF: SPANSION page erase timed out\n");
-			break;
-		}
-	}
-
-	debug("SF: SPANSION: Successfully erased %u bytes @ 0x%x\n",
-	      len, offset);
-
-	spi_release_bus(flash->spi);
-	return ret;
+	return spi_flash_cmd_erase(flash, CMD_S25FLXX_SE, offset, len);
 }
 
 struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
@@ -347,13 +236,9 @@ struct spi_flash *spi_flash_probe_spansion(struct spi_slave *spi, u8 *idcode)
 
 	spsn->flash.write = spansion_write;
 	spsn->flash.erase = spansion_erase;
-	spsn->flash.read = spansion_read_fast;
-	spsn->flash.size = params->page_size * params->pages_per_sector
-	    * params->nr_sectors;
-
-	printf("SF: Detected %s with page size %u, total ",
-	       params->name, params->page_size);
-	print_size(spsn->flash.size, "\n");
+	spsn->flash.read = spi_flash_cmd_read_fast;
+	spsn->flash.sector_size = params->page_size * params->pages_per_sector;
+	spsn->flash.size = spsn->flash.sector_size * params->nr_sectors;
 
 	return &spsn->flash;
 }

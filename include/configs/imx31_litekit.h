@@ -28,7 +28,7 @@
 #ifndef __CONFIG_H
 #define __CONFIG_H
 
-#include <asm/arch/mx31-regs.h>
+#include <asm/arch/imx-regs.h>
 
  /* High Level Configuration Options */
 #define CONFIG_ARM1136		1    /* This is an arm1136 CPU core */
@@ -38,6 +38,8 @@
 
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
+
+#define CONFIG_SYS_TEXT_BASE	0xa0000000
 
 /* Temporarily disabled */
 #if 0
@@ -145,6 +147,7 @@
 #define CONFIG_NR_DRAM_BANKS	1
 #define PHYS_SDRAM_1		CSD0_BASE
 #define PHYS_SDRAM_1_SIZE	(128 * 1024 * 1024)
+#define CONFIG_BOARD_EARLY_INIT_F
 
 #define CONFIG_SYS_SDRAM_BASE		CSD0_BASE
 #define CONFIG_SYS_INIT_RAM_ADDR	IRAM_BASE_ADDR

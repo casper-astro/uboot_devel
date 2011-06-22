@@ -71,6 +71,8 @@
 #define CONFIG_INITRD_TAG		1
 #define CONFIG_REVISION_TAG		1
 
+#define CONFIG_OF_LIBFDT		1
+
 /*
  * Size of malloc() pool
  * Total Size Environment - 256k
@@ -78,7 +80,6 @@
  */
 #define CONFIG_ENV_SIZE			(256 << 10)
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (256 << 10))
-						/* initial data */
 
 /*--------------------------------------------------------------------------*/
 
@@ -357,15 +358,5 @@
  *  - sixteen sectors (2 MB) for kernel
  *  - rest for filesystem
  */
-
-/*--------------------------------------------------------------------------*/
-
-#ifndef __ASSEMBLY__
-extern unsigned int boot_flash_base;
-extern volatile unsigned int boot_flash_env_addr;
-extern unsigned int boot_flash_off;
-extern unsigned int boot_flash_sec;
-extern unsigned int boot_flash_type;
-#endif
 
 #endif				/* __CONFIG_H */

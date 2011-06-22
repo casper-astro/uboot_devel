@@ -21,14 +21,10 @@
  * MA 02111-1307 USA
  */
 #include <common.h>
-#ifdef CONFIG_MX31
-#include <asm/arch/mx31-regs.h>
-#endif
-#if defined(CONFIG_MX51) || defined(CONFIG_MX53)
 #include <asm/arch/imx-regs.h>
-#endif
 #include <asm/io.h>
 #include <mxc_gpio.h>
+#include <errno.h>
 
 /* GPIO port description */
 static unsigned long gpio_ports[] = {
@@ -52,7 +48,7 @@ int mxc_gpio_direction(unsigned int gpio, enum mxc_gpio_direction direction)
 	u32 l;
 
 	if (port >= ARRAY_SIZE(gpio_ports))
-		return 1;
+		return -EINVAL;
 
 	gpio &= 0x1f;
 
@@ -100,7 +96,7 @@ int mxc_gpio_get(unsigned int gpio)
 	u32 l;
 
 	if (port >= ARRAY_SIZE(gpio_ports))
-		return -1;
+		return -EINVAL;
 
 	gpio &= 0x1f;
 

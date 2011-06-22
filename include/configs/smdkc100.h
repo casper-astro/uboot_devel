@@ -61,12 +61,14 @@
  * 1MB = 0x100000, 0x100000 = 1024 * 1024
  */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (1 << 20))
-						/* initial data */
 /*
  * select serial console configuration
  */
 #define CONFIG_SERIAL0			1	/* use SERIAL 0 on SMDKC100 */
 #define CONFIG_SERIAL_MULTI		1
+
+/* PWM */
+#define CONFIG_PWM			1
 
 /* allow to overwrite serial and ethaddr */
 #define CONFIG_ENV_OVERWRITE

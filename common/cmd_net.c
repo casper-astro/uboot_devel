@@ -52,6 +52,23 @@ U_BOOT_CMD(
 	"[loadAddress] [[hostIPaddr:]bootfilename]"
 );
 
+#ifdef CONFIG_CMD_TFTPSRV
+static int do_tftpsrv(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
+{
+	return netboot_common(TFTPSRV, cmdtp, argc, argv);
+}
+
+U_BOOT_CMD(
+	tftpsrv,	2,	1,	do_tftpsrv,
+	"act as a TFTP server and boot the first received file",
+	"[loadAddress]\n"
+	"Listen for an incoming TFTP transfer, receive a file and boot it.\n"
+	"The transfer is aborted if a transfer has not been started after\n"
+	"about 50 seconds or if Ctrl-C is pressed."
+);
+#endif
+
+
 #ifdef CONFIG_CMD_RARP
 int do_rarpb (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
@@ -324,7 +341,8 @@ int do_sntp (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	else NetTimeOffset = simple_strtol (toff, NULL, 10);
 
 	if (NetLoop(SNTP) < 0) {
-		printf("SNTP failed: host %s not responding\n", argv[1]);
+		printf("SNTP failed: host %pI4 not responding\n",
+			&NetNtpServerIP);
 		return 1;
 	}
 

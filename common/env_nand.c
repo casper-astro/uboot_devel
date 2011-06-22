@@ -181,7 +181,10 @@ int writeenv(size_t offset, u_char *buf)
 
 	return 0;
 }
+
 #ifdef CONFIG_ENV_OFFSET_REDUND
+static unsigned char env_flags;
+
 int saveenv(void)
 {
 	env_t	env_new;
@@ -190,10 +193,8 @@ int saveenv(void)
 	int	ret = 0;
 	nand_erase_options_t nand_erase_options;
 
+	memset(&nand_erase_options, 0, sizeof(nand_erase_options));
 	nand_erase_options.length = CONFIG_ENV_RANGE;
-	nand_erase_options.quiet = 0;
-	nand_erase_options.jffs2 = 0;
-	nand_erase_options.scrub = 0;
 
 	if (CONFIG_ENV_RANGE < CONFIG_ENV_SIZE)
 		return 1;
@@ -205,7 +206,7 @@ int saveenv(void)
 		return 1;
 	}
 	env_new.crc   = crc32(0, env_new.data, ENV_SIZE);
-	++env_new.flags; /* increase the serial */
+	env_new.flags = ++env_flags; /* increase the serial */
 
 	if(gd->env_valid == 1) {
 		puts("Erasing redundant NAND...\n");
@@ -246,10 +247,8 @@ int saveenv(void)
 	char	*res;
 	nand_erase_options_t nand_erase_options;
 
+	memset(&nand_erase_options, 0, sizeof(nand_erase_options));
 	nand_erase_options.length = CONFIG_ENV_RANGE;
-	nand_erase_options.quiet = 0;
-	nand_erase_options.jffs2 = 0;
-	nand_erase_options.scrub = 0;
 	nand_erase_options.offset = CONFIG_ENV_OFFSET;
 
 	if (CONFIG_ENV_RANGE < CONFIG_ENV_SIZE)
@@ -399,6 +398,7 @@ void env_relocate_spec(void)
 	else
 		ep = tmp_env2;
 
+	env_flags = ep->flags;
 	env_import((char *)ep, 0);
 
 	free(tmp_env1);

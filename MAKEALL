@@ -361,6 +361,8 @@ LIST_ARM9="			\
 	omap5912osk		\
 	omap730p2		\
 	openrd_base		\
+	openrd_client		\
+	openrd_ultimate		\
 	rd6281a			\
 	sbc2410x		\
 	scb9328			\
@@ -418,9 +420,11 @@ LIST_ARM11="			\
 ## ARMV7 Systems
 #########################################################################
 LIST_ARMV7="		\
+	am3517_crane		\
 	am3517_evm		\
 	ca9x4_ct_vxp		\
 	devkit8000		\
+	dig297			\
 	igep0020		\
 	igep0030		\
 	mx51evk			\
@@ -507,9 +511,7 @@ LIST_mips4kc="		\
 	vct_premium_onenand_small	\
 "
 
-LIST_mips5kc="		\
-	purple		\
-"
+LIST_mips5kc=""
 
 LIST_au1xx0="		\
 	dbau1000	\
@@ -546,10 +548,10 @@ LIST_mips_el="			\
 "
 
 #########################################################################
-## i386 Systems
+## x86 Systems
 #########################################################################
 
-LIST_x86="$(boards_by_arch i386)"
+LIST_x86="$(boards_by_arch x86)"
 
 #########################################################################
 ## Nios-II Systems

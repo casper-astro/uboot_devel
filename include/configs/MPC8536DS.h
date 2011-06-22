@@ -40,6 +40,7 @@
 #define CONFIG_SYS_TEXT_BASE_SPL 0xfff00000
 #define CONFIG_SYS_MONITOR_BASE	CONFIG_SYS_TEXT_BASE_SPL /* start of monitor */
 #else
+#define CONFIG_SYS_LDSCRIPT $(TOPDIR)/$(CPUDIR)/u-boot-nand.lds
 #define CONFIG_SYS_TEXT_BASE	0xf8f82000
 #endif /* CONFIG_NAND_SPL */
 #endif
@@ -311,7 +312,7 @@
 /* old pixis referenced names */
 #define PIXIS_VCLKH		0x19	/* VELA VCLKH register */
 #define PIXIS_VCLKL		0x1A	/* VELA VCLKL register */
-#define CONFIG_SYS_PIXIS_VBOOT_MASK	0xc0
+#define CONFIG_SYS_PIXIS_VBOOT_MASK	0x4e
 
 #define CONFIG_SYS_INIT_RAM_LOCK	1
 #define CONFIG_SYS_INIT_RAM_ADDR	0xffd00000	/* Initial L1 address */
@@ -360,13 +361,13 @@
 #define CONFIG_SYS_NAND_U_BOOT_RELOC_SP ((CONFIG_SYS_INIT_L2_END - 1) & ~0xF)
 
 /* NAND flash config */
-#define CONFIG_NAND_BR_PRELIM \
+#define CONFIG_SYS_NAND_BR_PRELIM \
 		(BR_PHYS_ADDR(CONFIG_SYS_NAND_BASE_PHYS) \
 		| (2<<BR_DECC_SHIFT)	/* Use HW ECC */ \
 		| BR_PS_8		/* Port Size = 8 bit */ \
 		| BR_MS_FCM		/* MSEL = FCM */ \
 		| BR_V)			/* valid */
-#define CONFIG_NAND_OR_PRELIM	(0xFFFC0000	/* length 256K */ \
+#define CONFIG_SYS_NAND_OR_PRELIM	(0xFFFC0000	/* length 256K */ \
 		| OR_FCM_PGS		/* Large Page*/ \
 		| OR_FCM_CSCT \
 		| OR_FCM_CST \
@@ -376,15 +377,15 @@
 		| OR_FCM_EHTR)
 
 #ifdef CONFIG_RAMBOOT_NAND
-#define CONFIG_SYS_BR0_PRELIM  CONFIG_NAND_BR_PRELIM	/* NAND Base Address */
-#define CONFIG_SYS_OR0_PRELIM  CONFIG_NAND_OR_PRELIM	/* NAND Options */
+#define CONFIG_SYS_BR0_PRELIM  CONFIG_SYS_NAND_BR_PRELIM /* NAND Base Address */
+#define CONFIG_SYS_OR0_PRELIM  CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
 #define CONFIG_SYS_BR2_PRELIM  CONFIG_FLASH_BR_PRELIM	/* NOR Base Address */
 #define CONFIG_SYS_OR2_PRELIM  CONFIG_FLASH_OR_PRELIM	/* NOR Options */
 #else
 #define CONFIG_SYS_BR0_PRELIM  CONFIG_FLASH_BR_PRELIM	/* NOR Base Address */
 #define CONFIG_SYS_OR0_PRELIM  CONFIG_FLASH_OR_PRELIM	/* NOR Options */
-#define CONFIG_SYS_BR2_PRELIM  CONFIG_NAND_BR_PRELIM	/* NAND Base Address */
-#define CONFIG_SYS_OR2_PRELIM  CONFIG_NAND_OR_PRELIM	/* NAND Options */
+#define CONFIG_SYS_BR2_PRELIM  CONFIG_SYS_NAND_BR_PRELIM /* NAND Base Address */
+#define CONFIG_SYS_OR2_PRELIM  CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
 #endif
 
 #define CONFIG_SYS_BR4_PRELIM \
@@ -393,14 +394,14 @@
 		| BR_PS_8		/* Port Size = 8 bit */ \
 		| BR_MS_FCM		/* MSEL = FCM */ \
 		| BR_V)			/* valid */
-#define CONFIG_SYS_OR4_PRELIM	CONFIG_NAND_OR_PRELIM	/* NAND Options */
+#define CONFIG_SYS_OR4_PRELIM	CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
 #define CONFIG_SYS_BR5_PRELIM \
 		(BR_PHYS_ADDR((CONFIG_SYS_NAND_BASE_PHYS + 0x80000)) \
 		| (2<<BR_DECC_SHIFT)	/* Use HW ECC */ \
 		| BR_PS_8		/* Port Size = 8 bit */ \
 		| BR_MS_FCM		/* MSEL = FCM */ \
 		| BR_V)			/* valid */
-#define CONFIG_SYS_OR5_PRELIM	CONFIG_NAND_OR_PRELIM	/* NAND Options */
+#define CONFIG_SYS_OR5_PRELIM	CONFIG_SYS_NAND_OR_PRELIM /* NAND Options */
 
 #define CONFIG_SYS_BR6_PRELIM \
 		(BR_PHYS_ADDR((CONFIG_SYS_NAND_BASE_PHYS + 0xc0000)) \
@@ -408,7 +409,7 @@
 		| BR_PS_8		/* Port Size = 8 bit */ \
 		| BR_MS_FCM		/* MSEL = FCM */ \
 		| BR_V)			/* valid */
-#define CONFIG_SYS_OR6_PRELIM	CONFIG_NAND_OR_PRELIM	/* NAND Options */
+#define CONFIG_SYS_OR6_PRELIM	CONFIG_SYS_NAND_OR_PRELIM	/* NAND Options */
 
 /* Serial Port - controlled on board with jumper J8
  * open - index 2
@@ -720,11 +721,11 @@
 
 /*
  * For booting Linux, the board info and command line data
- * have to be in the first 16 MB of memory, since this is
+ * have to be in the first 64 MB of memory, since this is
  * the maximum mapped by the Linux kernel during initialization.
  */
-#define CONFIG_SYS_BOOTMAPSZ	(16 << 20) /* Initial Memory map for Linux */
-#define CONFIG_SYS_BOOTM_LEN	(16 << 20)	/* Increase max gunzip size */
+#define CONFIG_SYS_BOOTMAPSZ	(64 << 20) /* Initial Memory map for Linux */
+#define CONFIG_SYS_BOOTM_LEN	(64 << 20)	/* Increase max gunzip size */
 
 #if defined(CONFIG_CMD_KGDB)
 #define CONFIG_KGDB_BAUDRATE	230400	/* speed to run kgdb serial port */

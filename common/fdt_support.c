@@ -183,7 +183,7 @@ int fdt_initrd(void *fdt, ulong initrd_start, ulong initrd_end, int force)
 		}
 	}
 
-	err = fdt_add_mem_rsv(fdt, initrd_start, initrd_end - initrd_start + 1);
+	err = fdt_add_mem_rsv(fdt, initrd_start, initrd_end - initrd_start);
 	if (err < 0) {
 		printf("fdt_initrd: %s\n", fdt_strerror(err));
 		return err;
@@ -394,7 +394,7 @@ int fdt_fixup_memory_banks(void *blob, u64 start[], u64 size[], int banks)
 {
 	int err, nodeoffset;
 	int addr_cell_len, size_cell_len, len;
-	u8 tmp[banks * 8];
+	u8 tmp[banks * 16]; /* Up to 64-bit address + 64-bit size */
 	int bank;
 
 	err = fdt_check_header(blob);

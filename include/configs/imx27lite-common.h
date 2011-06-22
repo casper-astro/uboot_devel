@@ -34,6 +34,8 @@
 #define CONFIG_DISPLAY_BOARDINFO
 #define CONFIG_DISPLAY_CPUINFO
 
+#define CONFIG_SYS_TEXT_BASE		0xc0000000
+
 #define CONFIG_CMDLINE_TAG		1	/* enable passing of ATAGs */
 #define CONFIG_SETUP_MEMORY_TAGS	1
 #define CONFIG_INITRD_TAG		1
@@ -88,7 +90,6 @@
  */
 /* malloc() len */
 #define CONFIG_SYS_MALLOC_LEN		(0x10000 + 512 * 1024)
-/* reserved for initial data */
 /* memtest start address */
 #define CONFIG_SYS_MEMTEST_START	0xA0000000
 #define CONFIG_SYS_MEMTEST_END		0xA1000000	/* 16MB RAM test */

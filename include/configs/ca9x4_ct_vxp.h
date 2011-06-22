@@ -30,6 +30,7 @@
 /* Board info register */
 #define SYS_ID				0x10000000
 #define CONFIG_REVISION_TAG		1
+#define CONFIG_SYS_TEXT_BASE		0x60800000
 
 /* High Level Configuration Options */
 #define CONFIG_ARMV7			1
@@ -42,6 +43,8 @@
 #define CONFIG_SETUP_MEMORY_TAGS	1
 #define CONFIG_L2_OFF			1
 #define CONFIG_INITRD_TAG		1
+
+#define CONFIG_OF_LIBFDT		1
 
 /* Size of malloc() pool */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + 128 * 1024)
@@ -86,6 +89,10 @@
 #define CONFIG_MMC			1
 #define CONFIG_CMD_MMC
 #define CONFIG_GENERIC_MMC
+#define CONFIG_ARM_PL180_MMCI
+#define CONFIG_ARM_PL180_MMCI_BASE	0x10005000
+#define CONFIG_SYS_MMC_MAX_BLK_COUNT	127
+#define CONFIG_ARM_PL180_MMCI_CLOCK_FREQ 6250000
 
 /* BOOTP options */
 #define CONFIG_BOOTP_BOOTFILESIZE

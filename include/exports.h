@@ -20,6 +20,7 @@ void __udelay(unsigned long);
 unsigned long get_timer(unsigned long);
 int vprintf(const char *, va_list);
 unsigned long simple_strtoul(const char *cp,char **endp,unsigned int base);
+int strict_strtoul(const char *cp, unsigned int base, unsigned long *res);
 char *getenv (char *name);
 int setenv (char *varname, char *varvalue);
 long simple_strtol(const char *cp,char **endp,unsigned int base);
@@ -45,7 +46,7 @@ enum {
 
 #define XF_VERSION	6
 
-#if defined(CONFIG_I386)
+#if defined(CONFIG_X86)
 extern gd_t *global_data;
 #endif
 

@@ -10,7 +10,7 @@
  *  Copyright (c) 2002	Gary Jennejohn <garyj@denx.de>
  *  Copyright (c) 2003	Richard Woodruff <r-woodruff2@ti.com>
  *  Copyright (c) 2003	Kshitij <kshitij@ti.com>
- *  Copyright (c) 2010	Albert Aribaud <albert.aribaud@free.fr>
+ *  Copyright (c) 2010	Albert Aribaud <albert.u.boot@aribaud.net>
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -131,6 +131,10 @@ _bss_start_ofs:
 
 .globl _bss_end_ofs
 _bss_end_ofs:
+	.word __bss_end__ - _start
+
+.globl _end_ofs
+_end_ofs:
 	.word _end - _start
 
 #ifdef CONFIG_USE_IRQ
@@ -281,7 +285,7 @@ _nand_boot_ofs:
 	.word nand_boot
 #else
 	ldr	r0, _board_init_r_ofs
-	adr	r1, _start
+	ldr	r1, _TEXT_BASE
 	add	lr, r0, r1
 	add	lr, lr, r9
 	/* setup parameters for board_init_r */

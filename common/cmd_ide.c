@@ -160,7 +160,7 @@ static uchar ide_wait  (int dev, ulong t);
 #define IDE_SPIN_UP_TIME_OUT 5000 /* 5 sec spin-up timeout */
 
 static void input_data(int dev, ulong *sect_buf, int words);
-static void output_data(int dev, ulong *sect_buf, int words);
+static void output_data(int dev, const ulong *sect_buf, int words);
 static void ident_cpy (unsigned char *dest, unsigned char *src, unsigned int len);
 
 #ifndef CONFIG_SYS_ATA_PORT_ADDR
@@ -517,8 +517,20 @@ __ide_outb(int dev, int port, unsigned char val)
 {
 	debug ("ide_outb (dev= %d, port= 0x%x, val= 0x%02x) : @ 0x%08lx\n",
 		dev, port, val, (ATA_CURR_BASE(dev)+CONFIG_SYS_ATA_PORT_ADDR(port)));
+
+#if defined(CONFIG_IDE_AHB)
+	if (port) {
+		/* write command */
+		ide_write_register(dev, port, val);
+	} else {
+		/* write data */
+		outb(val, (ATA_CURR_BASE(dev)));
+	}
+#else
 	outb(val, (ATA_CURR_BASE(dev)+CONFIG_SYS_ATA_PORT_ADDR(port)));
+#endif
 }
+
 void ide_outb (int dev, int port, unsigned char val)
 		__attribute__((weak, alias("__ide_outb")));
 
@@ -526,7 +538,13 @@ unsigned char inline
 __ide_inb(int dev, int port)
 {
 	uchar val;
+
+#if defined(CONFIG_IDE_AHB)
+	val = ide_read_register(dev, port);
+#else
 	val = inb((ATA_CURR_BASE(dev)+CONFIG_SYS_ATA_PORT_ADDR(port)));
+#endif
+
 	debug ("ide_inb (dev= %d, port= 0x%x) : @ 0x%08lx -> 0x%02x\n",
 		dev, port, (ATA_CURR_BASE(dev)+CONFIG_SYS_ATA_PORT_ADDR(port)), val);
 	return val;
@@ -695,6 +713,7 @@ void ide_init (void)
 		ide_dev_desc[i].blksz=0;
 		ide_dev_desc[i].lba=0;
 		ide_dev_desc[i].block_read=ide_read;
+		ide_dev_desc[i].block_write = ide_write;
 		if (!ide_bus_ok[IDE_BUS(i)])
 			continue;
 		ide_led (led, 1);		/* LED on	*/
@@ -811,7 +830,8 @@ set_pcmcia_timing (int pmode)
 
 /* We only need to swap data if we are running on a big endian cpu. */
 /* But Au1x00 cpu:s already swaps data in big endian mode! */
-#if defined(__LITTLE_ENDIAN) || ( defined(CONFIG_AU1X00) && !defined(CONFIG_GTH2) )
+#if defined(__LITTLE_ENDIAN) || \
+   (defined(CONFIG_SOC_AU1X00) && !defined(CONFIG_GTH2))
 #define input_swap_data(x,y,z) input_data(x,y,z)
 #else
 static void
@@ -855,7 +875,7 @@ input_swap_data(int dev, ulong *sect_buf, int words)
 
 #if defined(CONFIG_IDE_SWAP_IO)
 static void
-output_data(int dev, ulong *sect_buf, int words)
+output_data(int dev, const ulong *sect_buf, int words)
 {
 #if defined(CONFIG_CPC45)
 	uchar	*dbuf;
@@ -899,9 +919,13 @@ output_data(int dev, ulong *sect_buf, int words)
 }
 #else	/* ! CONFIG_IDE_SWAP_IO */
 static void
-output_data(int dev, ulong *sect_buf, int words)
+output_data(int dev, const ulong *sect_buf, int words)
 {
-	outsw(ATA_CURR_BASE(dev)+ATA_DATA_REG, sect_buf, words<<1);
+#if defined(CONFIG_IDE_AHB)
+	ide_write_data(dev, sect_buf, words);
+#else
+	outsw(ATA_CURR_BASE(dev)+ATA_DATA_REG, sect_buf, words << 1);
+#endif
 }
 #endif	/* CONFIG_IDE_SWAP_IO */
 
@@ -959,7 +983,11 @@ input_data(int dev, ulong *sect_buf, int words)
 static void
 input_data(int dev, ulong *sect_buf, int words)
 {
+#if defined(CONFIG_IDE_AHB)
+	ide_read_data(dev, sect_buf, words);
+#else
 	insw(ATA_CURR_BASE(dev)+ATA_DATA_REG, sect_buf, words << 1);
+#endif
 }
 
 #endif	/* CONFIG_IDE_SWAP_IO */
@@ -1320,7 +1348,7 @@ IDE_READ_E:
 /* ------------------------------------------------------------------------- */
 
 
-ulong ide_write (int device, lbaint_t blknr, ulong blkcnt, void *buffer)
+ulong ide_write (int device, lbaint_t blknr, ulong blkcnt, const void *buffer)
 {
 	ulong n = 0;
 	unsigned char c;

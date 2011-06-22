@@ -23,13 +23,11 @@
 
 CROSS_COMPILE ?= arm-linux-
 
-ifeq ($(BOARD),omap2420h4)
-STANDALONE_LOAD_ADDR = 0x80300000
-else
+ifndef CONFIG_STANDALONE_LOAD_ADDR
 ifeq ($(SOC),omap3)
-STANDALONE_LOAD_ADDR = 0x80300000
+CONFIG_STANDALONE_LOAD_ADDR = 0x80300000
 else
-STANDALONE_LOAD_ADDR = 0xc100000
+CONFIG_STANDALONE_LOAD_ADDR = 0xc100000
 endif
 endif
 
@@ -63,7 +61,6 @@ ifeq (,$(findstring arch/arm/lib/eabi_compat.o,$(PLATFORM_LIBS)))
 PLATFORM_LIBS += $(OBJTREE)/arch/arm/lib/eabi_compat.o
 endif
 endif
-LDSCRIPT := $(SRCTREE)/$(CPUDIR)/u-boot.lds
 
 # needed for relocation
 ifndef CONFIG_NAND_SPL

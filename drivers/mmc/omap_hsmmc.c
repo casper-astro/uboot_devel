@@ -30,6 +30,7 @@
 #include <twl4030.h>
 #include <asm/io.h>
 #include <asm/arch/mmc_host_def.h>
+#include <asm/arch/sys_proto.h>
 
 /* If we fail after 1 second wait, something is really bad */
 #define MAX_RETRY_MS	1000
@@ -464,6 +465,16 @@ int omap_mmc_init(int dev_index)
 
 	mmc->f_min = 400000;
 	mmc->f_max = 52000000;
+
+	mmc->b_max = 0;
+
+#if defined(CONFIG_OMAP34XX)
+	/*
+	 * Silicon revs 2.1 and older do not support multiblock transfers.
+	 */
+	if ((get_cpu_family() == CPU_OMAP34XX) && (get_cpu_rev() <= CPU_3XX_ES21))
+		mmc->b_max = 1;
+#endif
 
 	mmc_register(mmc);
 

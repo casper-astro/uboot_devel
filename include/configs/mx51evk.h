@@ -33,6 +33,8 @@
 #define CONFIG_DISPLAY_CPUINFO
 #define CONFIG_DISPLAY_BOARDINFO
 
+#define CONFIG_SYS_TEXT_BASE	0x97800000
+
 #define CONFIG_L2_OFF
 
 #include <asm/arch/imx-regs.h>
@@ -45,6 +47,8 @@
 #define CONFIG_REVISION_TAG		1
 #define CONFIG_SETUP_MEMORY_TAGS	1
 #define CONFIG_INITRD_TAG		1
+
+#define CONFIG_OF_LIBFDT		1
 
 /*
  * Size of malloc() pool

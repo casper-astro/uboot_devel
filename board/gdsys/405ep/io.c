@@ -29,19 +29,12 @@
 
 #include <miiphy.h>
 
-#include "../common/fpga.h"
+#include <gdsys_fpga.h>
 
 #define PHYREG_CONTROL				0
 #define PHYREG_PAGE_ADDRESS			22
 #define PHYREG_PG0_COPPER_SPECIFIC_CONTROL_1	16
 #define PHYREG_PG2_COPPER_SPECIFIC_CONTROL_2	26
-
-enum {
-	REG_VERSIONS = 0x0002,
-	REG_FPGA_FEATURES = 0x0004,
-	REG_FPGA_VERSION = 0x0006,
-	REG_QUAD_SERDES_RESET = 0x0012,
-};
 
 enum {
 	UNITTYPE_CCD_SWITCH = 1,
@@ -94,10 +87,12 @@ err_out:
  */
 int checkboard(void)
 {
-	char *s = getenv("serial#");
-	u16 versions = fpga_get_reg(REG_VERSIONS);
-	u16 fpga_version = fpga_get_reg(REG_FPGA_VERSION);
-	u16 fpga_features = fpga_get_reg(REG_FPGA_FEATURES);
+	char buf[64];
+	int i = getenv_f("serial#", buf, sizeof(buf));
+	ihs_fpga_t *fpga = (ihs_fpga_t *) CONFIG_SYS_FPGA_BASE(0);
+	u16 versions = in_le16(&fpga->versions);
+	u16 fpga_version = in_le16(&fpga->fpga_version);
+	u16 fpga_features = in_le16(&fpga->fpga_features);
 	unsigned unit_type;
 	unsigned hardware_version;
 	unsigned feature_channels;
@@ -112,9 +107,9 @@ int checkboard(void)
 
 	printf("CATCenter Io");
 
-	if (s != NULL) {
+	if (i > 0) {
 		puts(", serial# ");
-		puts(s);
+		puts(buf);
 	}
 	puts("\n       ");
 
@@ -166,6 +161,7 @@ int checkboard(void)
  */
 int last_stage_init(void)
 {
+	ihs_fpga_t *fpga = (ihs_fpga_t *) CONFIG_SYS_FPGA_BASE(0);
 	unsigned int k;
 
 	miiphy_register(CONFIG_SYS_GBIT_MII_BUSNAME,
@@ -175,7 +171,7 @@ int last_stage_init(void)
 		configure_gbit_phy(k);
 
 	/* take fpga serdes blocks out of reset */
-	fpga_set_reg(REG_QUAD_SERDES_RESET, 0);
+	out_le16(&fpga->quad_serdes_reset, 0);
 
 	return 0;
 }

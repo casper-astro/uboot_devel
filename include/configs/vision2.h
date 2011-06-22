@@ -27,6 +27,7 @@
 
 #define CONFIG_MX51	/* in a mx51 */
 #define CONFIG_L2_OFF
+#define CONFIG_SYS_TEXT_BASE	0x97800000
 
 #include <asm/arch/imx-regs.h>
 
@@ -45,8 +46,6 @@
  * Size of malloc() pool
  */
 #define CONFIG_SYS_MALLOC_LEN		(2048 * 1024)
-
-/* size in bytes reserved for initial data */
 
 /*
  * Hardware drivers

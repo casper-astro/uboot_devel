@@ -33,6 +33,7 @@
 #include <asm/cache.h>
 #include <asm/io.h>
 #include <asm/mmu.h>
+#include <asm/fsl_ifc.h>
 #include <asm/fsl_law.h>
 #include <asm/fsl_lbc.h>
 #include <post.h>
@@ -233,13 +234,14 @@ int do_reset (cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 /*
  * Get timebase clock frequency
  */
+#ifndef CONFIG_SYS_FSL_TBCLK_DIV
+#define CONFIG_SYS_FSL_TBCLK_DIV 8
+#endif
 unsigned long get_tbclk (void)
 {
-#ifdef CONFIG_FSL_CORENET
-	return (gd->bus_clk + 8) / 16;
-#else
-	return (gd->bus_clk + 4UL)/8UL;
-#endif
+	unsigned long tbclk_div = CONFIG_SYS_FSL_TBCLK_DIV;
+
+	return (gd->bus_clk + (tbclk_div >> 1)) / tbclk_div;
 }
 
 
@@ -280,7 +282,8 @@ int cpu_mmc_init(bd_t *bis)
 
 /*
  * Print out the state of various machine registers.
- * Currently prints out LAWs, BR0/OR0, and TLBs
+ * Currently prints out LAWs, BR0/OR0 for LBC, CSPR/CSOR/Timing
+ * parameters for IFC and TLBs
  */
 void mpc85xx_reginfo(void)
 {
@@ -289,11 +292,24 @@ void mpc85xx_reginfo(void)
 #if defined(CONFIG_FSL_LBC)
 	print_lbc_regs();
 #endif
+#ifdef CONFIG_FSL_IFC
+	print_ifc_regs();
+#endif
 
 }
 
 /* Common ddr init for non-corenet fsl 85xx platforms */
 #ifndef CONFIG_FSL_CORENET
+#if defined(CONFIG_SYS_RAMBOOT) && !defined(CONFIG_SYS_INIT_L2_ADDR)
+phys_size_t initdram(int board_type)
+{
+#if defined(CONFIG_SPD_EEPROM) || defined(CONFIG_DDR_SPD)
+	return fsl_ddr_sdram_size();
+#else
+	return CONFIG_SYS_SDRAM_SIZE * 1024 * 1024;
+#endif
+}
+#else /* CONFIG_SYS_RAMBOOT */
 phys_size_t initdram(int board_type)
 {
 	phys_size_t dram_size = 0;
@@ -343,6 +359,7 @@ phys_size_t initdram(int board_type)
 	puts("DDR: ");
 	return dram_size;
 }
+#endif /* CONFIG_SYS_RAMBOOT */
 #endif
 
 #if CONFIG_POST & CONFIG_SYS_POST_MEMORY

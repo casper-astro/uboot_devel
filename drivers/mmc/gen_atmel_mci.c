@@ -33,7 +33,7 @@
 #include <asm/errno.h>
 #include <asm/byteorder.h>
 #include <asm/arch/clk.h>
-#include <asm/arch/memory-map.h>
+#include <asm/arch/hardware.h>
 #include "atmel_mci.h"
 
 #ifndef CONFIG_SYS_MMC_CLK_OD
@@ -347,6 +347,8 @@ int atmel_mci_init(void *regs)
 	 */
 	mmc->f_min = get_mci_clk_rate() / (2*256);
 	mmc->f_max = get_mci_clk_rate() / (2*1);
+
+	mmc->b_max = 0;
 
 	mmc_register(mmc);
 

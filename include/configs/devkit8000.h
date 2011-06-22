@@ -61,11 +61,12 @@
 #define CONFIG_INITRD_TAG		1
 #define CONFIG_REVISION_TAG		1
 
+#define CONFIG_OF_LIBFDT		1
+
 /* Size of malloc() pool */
 #define CONFIG_ENV_SIZE			(128 << 10)	/* 128 KiB */
 						/* Sector */
 #define CONFIG_SYS_MALLOC_LEN		(CONFIG_ENV_SIZE + (128 << 10))
-						/* initial data */
 
 /* Hardware drivers */
 
@@ -297,15 +298,7 @@
 #define CONFIG_ENV_IS_IN_NAND		1
 #define SMNAND_ENV_OFFSET		0x260000 /* environment starts here */
 
-#define CONFIG_ENV_OFFSET		boot_flash_off
-
-#ifndef __ASSEMBLY__
-extern unsigned int boot_flash_base;
-extern volatile unsigned int boot_flash_env_addr;
-extern unsigned int boot_flash_off;
-extern unsigned int boot_flash_sec;
-extern unsigned int boot_flash_type;
-#endif
+#define CONFIG_ENV_OFFSET		SMNAND_ENV_OFFSET
 
 #define CONFIG_SYS_SDRAM_BASE          PHYS_SDRAM_1
 #define CONFIG_SYS_INIT_RAM_ADDR        0x4020f800

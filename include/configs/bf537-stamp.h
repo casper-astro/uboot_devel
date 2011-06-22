@@ -11,6 +11,7 @@
 /*
  * Processor Settings
  */
+#define CONFIG_BFIN_CPU             bf537-0.2
 #define CONFIG_BFIN_BOOT_MODE       BFIN_BOOT_BYPASS
 
 
@@ -136,7 +137,8 @@
  * SPI_MMC Settings
  */
 #define CONFIG_MMC
-#define CONFIG_SPI_MMC
+#define CONFIG_GENERIC_MMC
+#define CONFIG_MMC_SPI
 
 
 /*

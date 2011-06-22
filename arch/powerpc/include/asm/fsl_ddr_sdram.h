@@ -84,6 +84,7 @@ typedef ddr3_spd_eeprom_t generic_spd_eeprom_t;
 #define SDRAM_CFG_SDRAM_TYPE_SHIFT	24
 #define SDRAM_CFG_DYN_PWR		0x00200000
 #define SDRAM_CFG_32_BE			0x00080000
+#define SDRAM_CFG_16_BE			0x00100000
 #define SDRAM_CFG_8_BE			0x00040000
 #define SDRAM_CFG_NCAP			0x00020000
 #define SDRAM_CFG_2T_EN			0x00008000
@@ -270,7 +271,10 @@ typedef struct memctl_options_s {
 } memctl_options_t;
 
 extern phys_size_t fsl_ddr_sdram(void);
+extern phys_size_t fsl_ddr_sdram_size(void);
 extern int fsl_use_spd(void);
+extern void fsl_ddr_set_memctl_regs(const fsl_ddr_cfg_regs_t *regs,
+					unsigned int ctrl_num);
 
 /*
  * The 85xx boards have a common prototype for fixed_sdram so put the
