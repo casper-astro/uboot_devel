@@ -1,0 +1,39 @@
+#ifndef _SENSORS_ROACH2_H_
+#define _SENSORS_ROACH2_H_
+
+/*AD7414 Ambient temperature sensor*/
+#define R2_SENSOR_AD7414_U15_I2C_ADDR   0x4C
+#define R2_SENSOR_AD7414_U18_I2C_ADDR   0x4E
+#define R2_SENSOR_AD7414_TV             0x00
+#define R2_SENSOR_AD7414_CR             0x01
+#define R2_SENSOR_AD7414_THIGH          0x02
+#define R2_SENSOR_AD7414_TLOW           0x03
+
+/*MAX6650 FAN Speeds*/
+#define R2_SENSOR_MAX6650_U13_I2C_ADDR  0x48
+#define R2_SENSOR_MAX6650_U17_I2C_ADDR  0x4B
+#define R2_SENSOR_MAX6650_U21_I2C_ADDR  0x1B
+#define R2_SENSOR_MAX6650_U26_I2C_ADDR  0x1F
+#define R2_SENSOR_MAX6650_TACH0         0x0C
+
+/*DS1307 Real Time Clock*/
+#define R2_SENSOR_DS1307_U11_I2C_ADDR   0x68
+#define R2_SENSOR_DS1307_TIME           0x0
+#define R2_SENSOR_DS1307_TIME_LEN       0x7
+#define R2_SENSOR_DS1307_12HR           0x40
+
+#define R2_SENSOR_DS1307_DAY(x)       ((x) == 0 ? "SUN" : (x) == 1 ? "MON" :\
+(x) == 2 ? "TUE" : (x) == 3 ? "WED" :\
+(x) == 4 ? "THU" : (x) == 5 ? "FRI" :\
+(x) == 6 ? "SAT" : "ERR")
+
+/*MAX1805 Remote temperature for V6 and PPC*/
+#define R2_SENSOR_MAX1805_U22_I2C_ADDR      0x18
+#define R2_SENSOR_MAX1805_TEMP_DX1          0x01
+#define R2_SENSOR_MAX1805_TEMP_DX1_THIGH    0x0A
+#define R2_SENSOR_MAX1805_TEMP_DX1_TLOW     0x0B
+#define R2_SENSOR_MAX1805_TEMP_DX2          0x02
+#define R2_SENSOR_MAX1805_TEMP_DX2_THIGH    0x0C
+#define R2_SENSOR_MAX1805_TEMP_DX2_TLOW     0x0D
+
+#endif /*define _SENSORS_ROACH2_H_*/
