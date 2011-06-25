@@ -25,7 +25,13 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(BOARD).o
 
-COBJS-y	= $(BOARD).o sdram.o cmd_roach2.o sensors.o bit.o
+#TODO - cmds should be compiled if defined
+COBJS-y	= $(BOARD).o sdram.o sensors.o
+COBJS-$(CONFIG_CMD_R2SMAP) += cmd_r2smap.o
+COBJS-$(CONFIG_CMD_R2DEBUG) += cmd_r2debug.o
+COBJS-$(CONFIG_CMD_R2GPIO) += cmd_r2gpio.o
+COBJS-$(CONFIG_CMD_R2SENSORS) += cmd_r2sensors.o
+COBJS-$(CONFIG_CMD_R2BIT) += cmd_r2bit.o
 SOBJS	= init.o
 
 COBJS   := $(COBJS-y)

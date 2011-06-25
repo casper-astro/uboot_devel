@@ -34,6 +34,8 @@
 #include <asm/bitops.h>
 #include <asm/ppc4xx-ebc.h>
 
+#include "include/cpld.h"
+
 DECLARE_GLOBAL_DATA_PTR;
 
 extern flash_info_t flash_info[CONFIG_SYS_MAX_FLASH_BANKS]; /* info for FLASH chips */
@@ -326,6 +328,21 @@ extern int sensors_config(void);
 
 int last_stage_init()
 {
+  int major, minor, rcs;
+	major = *((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_MAJOR));
+	minor = *((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_MINOR));
+	rcs   = (*((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_RCS    )))*256 +
+	        (*((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_RCS + 1)))*1;
+
+	printf("CPLD Revision:    %d.%d.%d\n", major, minor, rcs);
+
+  if (major >= 4) {
+    /* After Revision 4 the CPLD changed to device paced transactions - so update ebc*/
+	  debug("ebc: cs2 [cpld]  ap=0x%08x\n", CONFIG_SYS_EBC_PB2AP_ALT);
+	  mtebc(PB2AP, CONFIG_SYS_EBC_PB2AP_ALT);
+  }
+
+
   return sensors_config();
 }
 #endif

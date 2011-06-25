@@ -29,25 +29,28 @@
 #ifdef CONFIG_CMD_R2BIT
 
 struct bit_mapping {
-  int (*test) (int which, int step, u32 flags);
-  char* name;
+  int (*test) (int which, int subtest, u32 flags);
+  const char* name;
+  uint subtests;
+  const char** subtest_name;
 };
 
 /* Forward declaration for function mapping */
-int bit_v6comm(int which, int step, u32 flags);
-int bit_qdrcal(int which, int step, u32 flags);
-int bit_qdrmem(int which, int step, u32 flags);
-int bit_qdrfab(int which, int step, u32 flags);
-int bit_zdok(int which, int step, u32 flags);
+int bit_v6comm(int which, int subtest, u32 flags);
+int bit_qdr(int which, int subtest, u32 flags);
+int bit_zdok(int which, int subtest, u32 flags);
 
-#define BIT_TESTS 5
-#define BIT_NAME_MAX 16
+#define BIT_TESTS 3
+
+/* TODO: definition mechanism requires refinement */
+const char* v6comm_subtests[2] = {"version check", "scratchpad access"}; 
+const char* zdok_subtests[1] = {"basic connectivity"}; 
+const char* qdr_subtests[3] = {"calibration", "ppc access", "fabric"};
+
 static struct bit_mapping bit_list[BIT_TESTS] = {
-  {&bit_v6comm, "v6comm"},
-  {&bit_zdok,   "zdok"},
-  {&bit_qdrcal, "qdrcal"},
-  {&bit_qdrmem, "qdrmem"},
-  {&bit_qdrfab, "qdrfab"},
+  {&bit_v6comm, "v6comm", 2, v6comm_subtests},
+  {&bit_zdok, "zdok", 1, zdok_subtests},
+  {&bit_qdr, "qdr", 3, qdr_subtests},
 };
 
 static char bit_strerr[256];
@@ -93,14 +96,14 @@ int v6comm_scratchtest(u32 flags)
   return 0;
 }
 
-int bit_v6comm(int which, int step, u32 flags)
+int bit_v6comm(int which, int subtest, u32 flags)
 {
   int ret = 0;
   int i;
   u32 offset = CONFIG_SYS_FPGA_BASE;
   u32 bid, maj, min, rcs;
 
-  switch (step){
+  switch (subtest){
   case 0:
     bid = *((volatile u32 *) (offset + BSP_REG_BOARDID));
     maj = *((volatile u32 *) (offset + BSP_REG_REVMAJ));
@@ -131,7 +134,7 @@ int bit_v6comm(int which, int step, u32 flags)
     }
     break;
   default:
-    sprintf(bit_strerr, "unsupport test step");
+    sprintf(bit_strerr, "unsupport subtest");
     ret = -1;
     break;
   }
@@ -178,7 +181,7 @@ int zdok_get_bit(int which, u32 bit)
 }
 
 
-int bit_zdok(int which, int step, u32 flags)
+int bit_zdok(int which, int subtest, u32 flags)
 {
   int i;
   u8 expecting;
@@ -316,7 +319,7 @@ int qdr_phy_tick_dly(int which, int dir)
 
 /*
   The QDR bit alignment algorithm goes something like this:
-  We control the delay on a qdr data bit through 32 steps of 72ps delay.
+  We control the delay on a qdr data bit through 32 subtests of 72ps delay.
   The data is toggling every cycle. We increment the delay until we see a bit
   transition. We then choose a safe place to delay the data where we are far
   enough away from the bit edge (EDGE_CLEARANCE). We also take care to sample
@@ -608,29 +611,51 @@ int qdr_fabric_test(int which)
   return -1;
 }
 
-int bit_qdrcal(int which, int step, u32 flags)
+int bit_qdr(int which, int subtest, u32 flags)
 {
-  return qdr_phy_cal(which, flags);
+  switch (subtest){
+  case 0:
+    return qdr_phy_cal(which, flags);
+    break;
+  case 1:
+    return qdr_mem_test(which);
+    break;
+  case 2:
+    return qdr_fabric_test(which);
+    break;
+  default:
+    sprintf(bit_strerr, "unsupport subtest");
+    return -1;
+    break;
+  }
 }
 
-int bit_qdrmem(int which, int step, u32 flags)
+void list_bits(void)
 {
-  return qdr_mem_test(which);
-}
-
-int bit_qdrfab(int which, int step, u32 flags)
-{
-  return qdr_fabric_test(which);
+  int i, j;
+  for (i=0; i < BIT_TESTS; i++) {
+    printf("%s", bit_list[i].name);
+    for (j=0; j < bit_list[i].subtests; j++) {
+      printf(" (%d: %s)", j, bit_list[i].subtest_name[j]);
+    }
+    printf("\n");
+  }
 }
 
 int do_roach2_test(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
   int i, index=-1;
-  int ret;
-  int arg_which = 0, arg_flags = 0, arg_step = 0;
+  int ret, ret_acc = 0;
+  int arg_which = 0, arg_flags = 0, arg_subtest = -1;
 
   if (argc < 2)
     return cmd_usage(cmdtp);
+
+  /* first check for the list command */
+  if (!strcmp(argv[1], "list")){
+    list_bits();
+    return 0;
+  }
 
   for (i = 0; i < BIT_TESTS; i++) {
     if (!strcmp(argv[1], bit_list[i].name)){
@@ -648,26 +673,44 @@ int do_roach2_test(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
   }
 
   if (argc > 3) {
-    arg_step = simple_strtoul(argv[3], NULL, 16);
+    arg_subtest = simple_strtoul(argv[3], NULL, 16);
+    if (arg_subtest > bit_list[index].subtests - 1) {
+      printf("ERROR: invalid subtest specified\n");
+      return -1;
+    }
   }
 
   if (argc > 4) {
     arg_flags = simple_strtoul(argv[4], NULL, 16);
   }
-  ret = (*bit_list[index].test)(arg_which, arg_step, arg_flags);
-  
-  if (!ret)
-    printf("PASSED\n");
-  else
-    printf("FAILED: %s\n", bit_strerr);
 
-  return ret;
+  if (arg_subtest < 0) {
+    for (i=0; i < bit_list[index].subtests; i++) {
+      ret = (*bit_list[index].test)(arg_which, i, arg_flags);
+      printf("(test: %s, subtest[%d]: %s) ", bit_list[index].name, i, bit_list[index].subtest_name[i]);
+      if (!ret)
+        printf("PASSED\n");
+      else
+        printf("FAILED: %s\n", bit_strerr);
+      ret_acc |= ret;
+    }
+  } else {
+    ret_acc = (*bit_list[index].test)(arg_which, arg_subtest, arg_flags);
+    printf("(test: %s, subtest[%d]: %s) ", bit_list[index].name, arg_subtest, bit_list[index].subtest_name[arg_subtest]);
+    if (!ret_acc)
+      printf("PASSED\n");
+    else
+      printf("FAILED: %s\n", bit_strerr);
+  }
+
+  return ret_acc;
 }
 
 
 U_BOOT_CMD(
 	r2bit,	5,	1,	do_roach2_test,
 	"run a roach2 built-in tests",
-	"<test> [which] [step] [flags] - run 'step' of 'test' on 'which' device with 'flags'"
+	"<test> [which] [subtest] [flags] - run 'subtest' of 'test' on 'which' device with 'flags'\n"
+  "      list - list the availiable tests and subtests"
 );
 #endif /* CONFIG_CMD_R2BIT */

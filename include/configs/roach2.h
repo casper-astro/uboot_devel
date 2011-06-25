@@ -44,6 +44,8 @@
 #define CONFIG_440        1  /* ... PPC440 family    */
 #define CONFIG_4xx        1  /* ... PPC4xx family    */
 
+
+
 /* ROACH 2 has a sysclk fixed at 33.3333 MHz */
 #define CONFIG_SYS_CLK_FREQ 33333333
 
@@ -101,7 +103,9 @@
 #define CONFIG_BAUDRATE    115200
 #define CONFIG_SYS_BAUDRATE_TABLE  \
     {300, 600, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200, 230400}
-#define CONFIG_CONS_INDEX  1       /* Use UART0 (FTDI) - TODO: finalize (or perhaps jumper setting)???*/
+/*#define CONFIG_CONS_INDEX  (2) */      /* UART1 (RS232) */
+
+#define CONFIG_CONS_INDEX  (1)      /* UART0 (FTDI)  */
 
 #undef CONFIG_SYS_EXT_SERIAL_CLOCK /* No external UART clk on ROACH 2 */ 
 
@@ -221,6 +225,7 @@
 #define CONFIG_SYS_FLASH_QUIET_TEST  1  /* don't warn upon unknown flash      */
 
 #define CONFIG_ENV_IS_IN_FLASH 1
+#define CONFIG_ENV_OVERWRITE 1 /* allows eth addr to be set */
 
 #define CONFIG_ENV_SECT_SIZE  0x20000  /* size of one complete sector        */
 #define CONFIG_ENV_ADDR    ((-CONFIG_SYS_MONITOR_LEN)-CONFIG_ENV_SECT_SIZE)
@@ -261,11 +266,11 @@
 #define CONFIG_CMD_SDRAM
 #define CONFIG_CMD_USB
 
-#define CONFIG_CMD_ROACH2_SMAP
-#define CONFIG_CMD_ROACH2_DEBUG
-#define CONFIG_CMD_ROACH2_GPIO
-#define CONFIG_CMD_ROACH2_SENSORS
-#define CONFIG_CMD_ROACH2_TEST
+#define CONFIG_CMD_R2SMAP
+#define CONFIG_CMD_R2DEBUG
+#define CONFIG_CMD_R2GPIO
+#define CONFIG_CMD_R2SENSORS
+#define CONFIG_CMD_R2BIT
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -349,13 +354,13 @@
          "ip=${ipaddr}:${serverip}:${gatewayip}:${netmask}" \
          ":${hostname}:${netdev}:off panic=1\0" \
         "addtty=setenv bootargs ${bootargs} console=ttyS0,${baudrate}\0" \
-        "ethaddr=02:02:02:02:02:02\0" \
         "flash_self=run ramargs addip addtty;" \
          "bootm ${kernel_addr} ${ramdisk_addr}\0" \
+        "ethaddr=02:02:02:02:02:00\0" \
         "kernel_addr=FC000000\0" \
         "ramdisk_addr=FC180000\0" \
-        "update=protect off FFFA0000 FFFFFFFF;era FFFA0000 FFFFFFFF;" \
-         "cp.b 200000 FFFA0000 60000\0" \
+        "clearenv=protect off FFF40000 FFF7FFFF;era FFF40000 FFF7FFFF\0" \
+        "update=protect off FFF80000 FFFFFFFF;era FFF80000 FFFFFFFF;dhcp;tftp 200000 u-boot.bin;cp.b 200000 FFF80000 80000\0" \
         ""
 
 
@@ -430,13 +435,16 @@
 
 /* Bank 2 (CPLD) initialization */
 #ifdef CONFIG_SYS_CPLD_BASE
-#define CONFIG_SYS_EBC_PB2AP  (EBC_AP_TWT(0) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1))
+#define CONFIG_SYS_EBC_PB2AP  (EBC_AP_TWT(1) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1))
 #define CONFIG_SYS_EBC_PB2CR  (CONFIG_SYS_CPLD_BASE | EBC_BANK_1M | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_8B)
+
+#define CONFIG_SYS_EBC_PB2AP_ALT (EBC_AP_TWT(2) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1) | EBC_AP_RE)
+#define CONFIG_SYS_EBC_PB2CR_ALT (CONFIG_SYS_CPLD_BASE | EBC_BANK_1M | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_8B)
 #endif
 
 /* Bank 3 (selectmap) initialization */
 #ifdef CONFIG_SYS_SMAP_BASE
-#define CONFIG_SYS_EBC_PB3AP  (EBC_AP_TWT(1) | EBC_AP_CSN(1) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(1) | EBC_AP_SOR)
+#define CONFIG_SYS_EBC_PB3AP  (EBC_AP_TWT(0) | EBC_AP_CSN(0) | EBC_AP_OEN(0) | EBC_AP_WBN(0) | EBC_AP_WBF(0) | EBC_AP_TH(0))
 #define CONFIG_SYS_EBC_PB3CR  (CONFIG_SYS_SMAP_BASE | EBC_BANK_1M  | EBC_BANK_READ | EBC_BANK_WRITE | EBC_BANK_32B)
 #endif
 
@@ -471,7 +479,7 @@
 {GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO19 GMCTxD(7)      */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO20 RejectPkt0      */  \
 {GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO21 RejectPkt1      */  \
-{GPIO0_BASE, GPIO_IN , GPIO_SEL , GPIO_OUT_0}, /* GPIO22        */  \
+{GPIO0_BASE, GPIO_OUT, GPIO_SEL , GPIO_OUT_1}, /* GPIO22 PB_KILLn */  \
 {GPIO0_BASE, GPIO_IN , GPIO_ALT1, GPIO_OUT_0}, /* GPIO23 SCPD0        */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_1}, /* GPIO24 GMCTxD(2)      */  \
 {GPIO0_BASE, GPIO_OUT, GPIO_ALT1, GPIO_OUT_1}, /* GPIO25 GMCTxD(3)      */  \
