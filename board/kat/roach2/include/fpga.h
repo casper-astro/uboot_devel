@@ -71,4 +71,16 @@
 #define BSP_QDRCONF_ALIGN_EN      (0x00000100)
 #define BSP_QDRCONF_ALIGN_BYPASS  (0x00000000)
 
+/* GBE definitions */
+
+#define BSP_GBE_OFFSET     0x600000
+
+#define BSP_GBE_REG_OFFSET 0x0
+#define BSP_GBE_TX_OFFSET  0x1000
+#define BSP_GBE_RX_OFFSET  0x2000
+#define BSP_GBE_ARP_OFFSET 0x3000
+
+#define BSP_GBE_REG_TXSIZE 0x18
+#define BSP_GBE_REG_RXSIZE 0x1a
+
 #endif

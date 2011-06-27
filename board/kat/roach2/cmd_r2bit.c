@@ -36,24 +36,28 @@ struct bit_mapping {
 };
 
 /* Forward declaration for function mapping */
+extern int bit_v6gbe(int which, int subtest, u32 flags);
 int bit_v6comm(int which, int subtest, u32 flags);
 int bit_qdr(int which, int subtest, u32 flags);
 int bit_zdok(int which, int subtest, u32 flags);
 
-#define BIT_TESTS 3
+#define BIT_TESTS 4
 
 /* TODO: definition mechanism requires refinement */
+
+const char* v6gbe_subtests[3] = {"phy status", "sgmii status", "ping"}; 
 const char* v6comm_subtests[2] = {"version check", "scratchpad access"}; 
 const char* zdok_subtests[1] = {"basic connectivity"}; 
 const char* qdr_subtests[3] = {"calibration", "ppc access", "fabric"};
 
 static struct bit_mapping bit_list[BIT_TESTS] = {
+  {&bit_v6gbe, "v6gbe", 3, v6gbe_subtests},
   {&bit_v6comm, "v6comm", 2, v6comm_subtests},
   {&bit_zdok, "zdok", 1, zdok_subtests},
   {&bit_qdr, "qdr", 3, qdr_subtests},
 };
 
-static char bit_strerr[256];
+char bit_strerr[256];
 
 /************************** V6 Comms BIT *******************************/
 

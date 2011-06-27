@@ -32,6 +32,7 @@ COBJS-$(CONFIG_CMD_R2DEBUG) += cmd_r2debug.o
 COBJS-$(CONFIG_CMD_R2GPIO) += cmd_r2gpio.o
 COBJS-$(CONFIG_CMD_R2SENSORS) += cmd_r2sensors.o
 COBJS-$(CONFIG_CMD_R2BIT) += cmd_r2bit.o
+COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_v6gbe.o
 SOBJS	= init.o
 
 COBJS   := $(COBJS-y)
