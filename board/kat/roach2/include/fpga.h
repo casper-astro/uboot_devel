@@ -82,5 +82,21 @@
 
 #define BSP_GBE_REG_TXSIZE 0x18
 #define BSP_GBE_REG_RXSIZE 0x1a
+#define BSP_GBE_REG_STIDLE 0x24
+#define BSP_GBE_REG_STLINK 0x26
+
+/* TGE definitions */
+
+#define BSP_TGE_OFFSET(x)  (0x200000 + 0x80000*(x))
+
+#define BSP_TGE_REG_OFFSET 0x0
+#define BSP_TGE_TX_OFFSET  0x1000
+#define BSP_TGE_RX_OFFSET  0x2000
+#define BSP_TGE_ARP_OFFSET 0x3000
+
+#define BSP_TGE_REG_TXSIZE 0x18
+#define BSP_TGE_REG_RXSIZE 0x1a
+#define BSP_TGE_REG_STIDLE 0x24
+#define BSP_TGE_REG_STLINK 0x26
 
 #endif

@@ -88,6 +88,16 @@ int v6gbe_getframe(Ethernet_t *eth_h, u8 *data)
   return rxsize;
 }
 
+int v6gbe_flushrx(void)
+{
+  /* Ack the buffer */
+  v6gbe_reg_set_short(BSP_GBE_REG_RXSIZE, 0);
+  /* Ack the buffer */
+  v6gbe_reg_set_short(BSP_GBE_REG_RXSIZE, 0);
+
+  return 0;
+}
+
 #define PACKET_BUFFER_MAX 1500
 
 int v6gbe_sendping(void)
@@ -193,7 +203,7 @@ int v6gbe_rxloop(void)
     src_ip = IP(packet_buffer[14], packet_buffer[15], packet_buffer[16], packet_buffer[17]);
 
     if (arp_h->ar_op == ARPOP_REQUEST) {
-      printf("sent arp\n");
+      //printf("sent arp\n");
       if (v6gbe_send_arpresponse(packet_buffer + 8, src_ip))
         return -1;
     }
@@ -215,9 +225,27 @@ int v6gbe_rxloop(void)
   return 0;
 }
 
-#define RXLOOP_DELAY 100
-#define RXLOOP_MAX 10000
+#define RXLOOP_DELAY 10000
+#define RXLOOP_MAX 100
 #define TXLOOP_MAX 4
+
+int gbe_check_phy_status(int delay)
+{
+  u16 idle_start, idle_end;
+  idle_end = v6gbe_reg_get_short(BSP_GBE_REG_STLINK);
+  idle_start = v6gbe_reg_get_short(BSP_GBE_REG_STIDLE);
+  if (!idle_end) {
+    sprintf(bit_strerr,"sgmii link down");
+    return -1;
+  }
+  udelay(delay);
+  idle_end = v6gbe_reg_get_short(BSP_GBE_REG_STIDLE);
+  if (idle_end != idle_start) {
+    sprintf(bit_strerr,"sgmii decoding errors detected");
+    return -1;
+  }
+  return 0;
+}
 
 int bit_v6gbe(int which, int subtest, u32 flags) {
   int ret = 0;
@@ -228,11 +256,12 @@ int bit_v6gbe(int which, int subtest, u32 flags) {
     return -1;
     break;
   case 1: 
-    sprintf(bit_strerr,"not implemented");
-    return -1;
+    return gbe_check_phy_status(1000000);
     break;
   case 2: 
     while (1) {
+      v6gbe_flushrx();
+
       if (tx_loops++ >= TXLOOP_MAX) {
         ret = -2;
         break;
