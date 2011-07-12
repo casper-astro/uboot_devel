@@ -58,15 +58,14 @@
  * resources get mapped (not physical addresses).
  *----------------------------------------------------------------------*/
 
+#define CONFIG_SYS_TEXT_BASE  0xFFF80000
+
 #define CONFIG_SYS_SDRAM_BASE   0x00000000  /* _must_ be 0    */
 #define CONFIG_SYS_SDRAM_BASE1  0x10000000
 #define CONFIG_SYS_MONITOR_BASE CONFIG_SYS_TEXT_BASE  /* Start of U-Boot  */
 #define CONFIG_SYS_MONITOR_LEN  (0xFFFFFFFF - CONFIG_SYS_MONITOR_BASE + 1)
 #define CONFIG_SYS_MALLOC_LEN   (1 << 20)  /* Reserved for malloc  */
 
-#ifndef CONFIG_SYS_TEXT_BASE
-#define CONFIG_SYS_TEXT_BASE  0xFFF80000
-#endif
 
 #define CONFIG_SYS_BOOT_BASE_ADDR     0xf0000000
 #define CONFIG_SYS_FLASH_BASE         0xf8000000  /* start of FLASH  */
@@ -417,11 +416,14 @@
 #define EBC_BANK_64M   0x000c0000
 #define EBC_BANK_128M  0x000e0000
 
-#define CONFIG_FLASH_BASE  CONFIG_SYS_FLASH_BASE
+
+#define CONFIG_FLASH_BASE CONFIG_SYS_FLASH_BASE
 
 #define CONFIG_SYS_CPLD_BASE   0xC0000000
 #define CONFIG_SYS_FPGA_BASE   0xD0000000
 #define CONFIG_SYS_SMAP_BASE   0xC0100000
+
+#define CONFIG_SYS_EBC_CFG 0xbe4c0000
 
 /* Bank 0 (NOR-FLASH) initialization */
 #define CONFIG_SYS_EBC_PB0AP  (EBC_AP_TWT(13) | EBC_AP_CSN(0) | EBC_AP_OEN(2) | EBC_AP_WBN(1) | EBC_AP_WBF(3) | EBC_AP_TH(2))
