@@ -25,6 +25,7 @@
  * MA 02111-1307 USA
  */
 
+#include <serial.h>
 #include <common.h>
 #include <libfdt.h>
 #include <fdt_support.h>
@@ -33,6 +34,7 @@
 #include <asm/io.h>
 #include <asm/bitops.h>
 #include <asm/ppc4xx-ebc.h>
+
 
 #include "include/cpld.h"
 
@@ -117,6 +119,7 @@ int misc_init_r(void)
   unsigned long usb2phy0cr, usb2h0cr = 0;
   unsigned long sdr0_pfc1;
   u32 reg;
+  int major, minor;
 
   mtdcr(EBC0_CFGADDR, EBC0_CFG);
   mtdcr(EBC0_CFGDATA, EBC_CFG_EBTC_DRIVEN |
@@ -171,6 +174,31 @@ int misc_init_r(void)
    * Re-check to get correct base address
    */
   flash_get_size(gd->bd->bi_flashstart, 0);
+
+	major = *((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REG_MAJOR));
+	minor = *((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REG_MINOR));
+
+
+  if (major > 0) { /* if CPLD programmed */
+	  printf("CPLD:  %d.%d\n", major, minor);
+    int dips;
+    /* read dip switches */
+	  dips = *((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REG_DIPS));
+    if (!(dips & 0x80)) {
+	    printf("UART1: assigning as console default\n");
+      if (serial_assign("eserial1")) {
+	      printf("warning: failed to assign uart to RS232\n");
+      } else {
+        serial_init();
+        serial_stdio_init();
+      }
+    }
+    /* change bus timing to device paced */
+	  debug("ebc: cs2 [cpld]  ap=0x%08x\n", CONFIG_SYS_EBC_PB2AP_ALT);
+	  mtebc(PB2AP, CONFIG_SYS_EBC_PB2AP_ALT);
+  } else {
+	  printf("CPLD:  unprogrammed\n");
+  }
  
 #ifdef CONFIG_ENV_IS_IN_FLASH
   /* Monitor protection ON by default */
@@ -328,19 +356,6 @@ extern int sensors_config(void);
 
 int last_stage_init()
 {
-  int major, minor, rcs;
-	major = *((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_MAJOR));
-	minor = *((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_MINOR));
-	rcs   = (*((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_RCS    )))*256 +
-	        (*((unsigned char*)(CONFIG_SYS_CPLD_BASE + CPLD_REV_RCS + 1)))*1;
-
-	printf("CPLD Revision:    %d.%d.%d\n", major, minor, rcs);
-
-  if (major >= 4) {
-    /* After Revision 4 the CPLD changed to device paced transactions - so update ebc*/
-	  debug("ebc: cs2 [cpld]  ap=0x%08x\n", CONFIG_SYS_EBC_PB2AP_ALT);
-	  mtebc(PB2AP, CONFIG_SYS_EBC_PB2AP_ALT);
-  }
 
 
   return sensors_config();

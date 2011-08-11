@@ -37,6 +37,7 @@ COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_tge.o
 COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_v6gbe.o
 COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_v6comm.o
 COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_zdok.o
+COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_ddr3.o
 SOBJS	= init.o
 
 COBJS   := $(COBJS-y)

@@ -86,7 +86,7 @@ static int qdr_phy_tick_dly(int which, int dir)
 
 #define STABLE_THRESHOLD 4
 
-#define EDGE_CLEARANCE 9
+#define EDGE_CLEARANCE 7
 
 /*
   The QDR bit alignment algorithm goes something like this:
@@ -111,7 +111,7 @@ static int qdr_phy_tick_dly(int which, int dir)
   the bit by a whole cycle to get 2's.
 */
 
-static int qdr_align_bit(int which, int bit)
+static int qdr_align_bit(int which, int bit, u32 flag)
 {
   int i;
   u32 dreg;
@@ -139,18 +139,21 @@ static int qdr_align_bit(int which, int bit)
     dreg = qdr_get_reg(which, BSP_QDRCONF_REG_STATUS);
     is_stable = dreg & 0x00000100;
     val = dreg % 4;
-    bit_line[i] = is_stable ? val : 0xb;
+    bit_line[i] = is_stable && (val == 1 || val == 2) ? val : 0xb;
+    qdr_phy_tick_dly(which, 1);
+  }
 
-    if (is_stable && (val == 1 || val == 2)){
+  for (i=0; i < 32; i++) {
+    if (bit_line[i] != 0xb){
       if (!first_val){
-        first_val = val;
+        first_val = bit_line[i];
       }
       stable_count++;
 
-      if (val != prev_val)
+      if (bit_line[i] != prev_val)
         stable_count = 0;
          
-      if (first_val != val && stable_count >= STABLE_THRESHOLD){
+      if (first_val != bit_line[i] && stable_count >= STABLE_THRESHOLD){
         if (i - STABLE_THRESHOLD + EDGE_CLEARANCE >= 31){
           /* in this case the calibration point is before the bit transition */
           cal_pos = i - baddies - STABLE_THRESHOLD - EDGE_CLEARANCE;
@@ -167,9 +170,23 @@ static int qdr_align_bit(int which, int bit)
       }
       stable_count = 0;
     }
-    prev_val = val;
+    prev_val = bit_line[i];
+  }
 
-    qdr_phy_tick_dly(which, 1);
+  /* dump the bit */
+  if (flag & 0x1) {
+    for (i=0; i < 32; i++) {
+      switch (bit_line[i]){
+      case 1:
+        printf("1");
+        break;
+      case 2:
+        printf("2");
+        break;
+      default:
+        printf("x");
+      } 
+    }
   }
 
   /* reset the delay elements to 0 offset */
@@ -194,7 +211,23 @@ static int qdr_align_bit(int which, int bit)
   if (!is_stable || val == 0 || val == 3){
     sprintf(bit_strerr, "calibrated data bit unstable or has bad value");
     ret = 1;
+  } else {
+    if (flag & 0x1) {
+      printf("\n");
+      for (i=0; i <= 31; i++) {
+        if (i == cal_pos) 
+          printf("^");
+        else
+          printf(" ");
+      }
+      printf(" [%02d]", cal_pos);
+      //debug only
+      printf(" val = %d", val);
+    }
   }
+  if (flag & 0x1)
+    printf("\n");
+
   return ret;
 }
 
@@ -260,9 +293,7 @@ static int qdr_phy_cal(int which, u32 flags)
   }
 
   for (i=0; i < 36; i++) {
-    if (flags & 0x1)
-      qdr_dump_bit(which, i);
-    ret = qdr_align_bit(which, i);
+    ret = qdr_align_bit(which, i, flags);
     if (ret)
       break;
   }
@@ -315,10 +346,11 @@ static u32 qdr_mem_get_reg(int which, u32 reg)
   return *((volatile u32 *) (offset));
 }
 
-static int qdr_mem_test(int which)
+static int qdr_mem_test(int which, u32 flags)
 {
   u32 i, j;
   u32 d, t;
+  int ret = 0;
   d = qdr_mem_get_reg(which, BSP_QDRM_REG_STAT);
 
   if (!(d & BSP_QDRM_PHYRDY)) {
@@ -330,6 +362,120 @@ static int qdr_mem_test(int which)
     sprintf(bit_strerr, "qdr phy calibration failed");
     return -1;
   }
+  /* walking zero */
+
+  for (i=0; i < 144; i++){
+    qdr_mem_set_reg(which, BSP_QDRM_REG_A, i);
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 0, 0xffffffff);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 4, 0xffffffff);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 8, 0xffffffff);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 12, 0xffffffff);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 16, 0xffffffff);
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + (BSP_QDRM_DLEN - 1 - (i/32))*4, ~(1 << (i % 32)));
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_CTRL, BSP_QDRM_WREN);
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_CTRL, BSP_QDRM_RDEN);
+    /* wait for rd flag to clear */
+    for (j=0; j < 1000; j++){
+      if (!(qdr_mem_get_reg(which, BSP_QDRM_REG_CTRL) & BSP_QDRM_RDEN)){
+        break;
+      }
+      if (j == 999) {
+        sprintf(bit_strerr, "timeout waiting for read to be completed");
+        return -1;
+      }
+    }
+
+    for (j=0; j < BSP_QDRM_DLEN; j++) {
+      t = qdr_mem_get_reg(which, BSP_QDRM_REG_Q + (j << 2));
+
+      if (j == (BSP_QDRM_DLEN - 1 - i/32))
+        d = ~(1 << (i % 32));
+      else
+        d = 0xffffffff;
+
+      if (j == 0)
+        d &= 0xffff;
+
+      if (d != t) {
+        ret = -1;
+        sprintf(bit_strerr, "walking 0 test, error on bit %d in data burst, %d on data bus", i, i%36);
+        if (flags & 0x2)
+          printf("%s\n", bit_strerr);
+      }
+    }
+
+    if (flags & 0x1) {
+      for (j=0; j < BSP_QDRM_DLEN; j++) {
+        t = qdr_mem_get_reg(which, BSP_QDRM_REG_Q + (j << 2));
+        printf("%08x",t);
+      }
+      printf("[%3d, %2d]\n", i, i%36);
+    }
+    
+  }
+
+  if (!(flags & 0x2)) {
+    if (ret)
+      return -1;
+  }
+
+  /* walking one */
+  for (i=0; i < 144; i++){
+    qdr_mem_set_reg(which, BSP_QDRM_REG_A, i);
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 0, 0);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 4, 0);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 8, 0);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 12, 0);
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + 16, 0);
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_D + (BSP_QDRM_DLEN - 1 - (i/32))*4, (1 << (i % 32)));
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_CTRL, BSP_QDRM_WREN);
+
+    qdr_mem_set_reg(which, BSP_QDRM_REG_CTRL, BSP_QDRM_RDEN);
+    /* wait for rd flag to clear */
+    for (j=0; j < 1000; j++){
+      if (!(qdr_mem_get_reg(which, BSP_QDRM_REG_CTRL) & BSP_QDRM_RDEN)){
+        break;
+      }
+      if (j == 999) {
+        sprintf(bit_strerr, "timeout waiting for read to be completed");
+        return -1;
+      }
+    }
+
+    for (j=0; j < BSP_QDRM_DLEN; j++) {
+      t = qdr_mem_get_reg(which, BSP_QDRM_REG_Q + (j << 2));
+      if (j == (BSP_QDRM_DLEN - 1 - i/32))
+        d = (1 << (i % 32));
+      else
+        d = 0;
+
+      if (d != t) {
+        ret = -1;
+        sprintf(bit_strerr, "walking 1 test, error on bit %d in data burst, %d on data bus", i, i%36);
+        if (flags & 0x2)
+          printf("%s\n", bit_strerr);
+      }
+    }
+
+    if (flags & 0x1) {
+      for (j=0; j < BSP_QDRM_DLEN; j++) {
+        t = qdr_mem_get_reg(which, BSP_QDRM_REG_Q + (j << 2));
+        printf("%08x",t);
+      }
+      printf("[%3d, %2d]\n", i, i%36);
+    }
+    
+  }
+  if (ret)
+    return -1;
+
 
   for (i=0; i < BSP_QDRM_DEPTH; i++){
     qdr_mem_set_reg(which, BSP_QDRM_REG_A, i);
@@ -389,7 +535,7 @@ int bit_qdr(int which, int subtest, u32 flags)
     return qdr_phy_cal(which, flags);
     break;
   case 1:
-    return qdr_mem_test(which);
+    return qdr_mem_test(which, flags);
     break;
   case 2:
     return qdr_fabric_test(which);

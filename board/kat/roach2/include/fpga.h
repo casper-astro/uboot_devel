@@ -71,6 +71,25 @@
 #define BSP_QDRCONF_ALIGN_EN      (0x00000100)
 #define BSP_QDRCONF_ALIGN_BYPASS  (0x00000000)
 
+/* DDR3 definitions */
+
+#define BSP_DDR3_OFFSET     0x4000000
+
+#define BSP_DDR3_REG_STATUS (BSP_DDR3_OFFSET + 0x0)
+#define BSP_DDR3_REG_CTRL   (BSP_DDR3_OFFSET + 0x4)
+#define BSP_DDR3_REG_ADDR   (BSP_DDR3_OFFSET + 0x8)
+
+#define BSP_DDR3_PHY_RDY    0x000000001
+#define BSP_DDR3_RD         0x000000001
+#define BSP_DDR3_WR         0x000000100
+
+#define BSP_DDR3_REG_WR(x)  (BSP_DDR3_OFFSET + (0x080 + ((x)/5)*32 + 4*((x)%5)))
+#define BSP_DDR3_REG_RD(x)  (BSP_DDR3_OFFSET + (0x100 + ((x)/5)*32 + 4*((x)%5)))
+
+#define BSP_DDR3_DLEN     (5*4)
+
+#define BSP_DDR3_IS_HALF(x)  ((x%5)==0)
+
 /* GBE definitions */
 
 #define BSP_GBE_OFFSET     0x600000
