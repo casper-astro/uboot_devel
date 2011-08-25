@@ -40,6 +40,10 @@ int bit_tge(int which, int subtest, u32 flags) {
     sprintf(bit_strerr,"not implemented");
     return -1;
     break;
+  case 2: 
+    sprintf(bit_strerr,"not implemented");
+    return -1;
+    break;
   default: 
     sprintf(bit_strerr,"subtest not supported");
     return -1;

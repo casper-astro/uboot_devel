@@ -356,8 +356,6 @@ extern int sensors_config(void);
 
 int last_stage_init()
 {
-
-
   return sensors_config();
 }
 #endif
