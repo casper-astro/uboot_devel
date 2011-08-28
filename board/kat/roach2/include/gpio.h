@@ -11,15 +11,17 @@
 #define GPIO_SMAP_GPIO3 31
 #define GPIO_SMAP_LED   29
 #define GPIO_SMAP_KILLN 22
+#define GPIO_SMAP_FAULTN 41 
 
 struct gpio_mapping{
   const char* name;
   int index;
 };
 
-#define GPIO_COUNT 10
+#define GPIO_COUNT 11
 
 #define R2_GPIO_MAPPING { \
+{"faultn", GPIO_SMAP_FAULTN}, \
 {"init_n", GPIO_SMAP_INITN}, \
 {"done",   GPIO_SMAP_DONE }, \
 {"prog_n", GPIO_SMAP_PROGN}, \

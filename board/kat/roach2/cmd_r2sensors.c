@@ -28,224 +28,186 @@
 
 #ifdef CONFIG_CMD_R2SENSORS
 
-int dump_roach2_sensor_info(void)
+struct max16071_current cmon_defs[CMON_COUNT] = CURRENT_DEFS;
+struct max16071_voltage vmon_defs[VMON_COUNT] = VOLTAGE_DEFS;
+struct max16071_pgood pgood_defs[PGOOD_COUNT] = PGOOD_DEFS;
+
+static int sensor_get_reg(u8 addr, u8 reg)
 {
   uchar buffer[1];
-
-  if (i2c_read(R2_SENSOR_AD7414_U15_I2C_ADDR, R2_SENSOR_AD7414_TV, 1, buffer, 1) != 0) {
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_AD7414_U15_I2C_ADDR);
-  }
-  else
-    printf("Ambient Temperature at inlet (U15) is\t:\t%d dC\n",(int)buffer[0]);
-  
-  if (i2c_read(R2_SENSOR_AD7414_U18_I2C_ADDR, R2_SENSOR_AD7414_TV, 1, buffer, 1) != 0) {
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_AD7414_U18_I2C_ADDR);
-  }
-  else
-    printf("Ambient Temperature at outlet (U18) is\t:\t%d dC\n",(int)buffer[0]);
-
-  if (i2c_read(R2_SENSOR_MAX6650_U13_I2C_ADDR, R2_SENSOR_MAX6650_TACH0,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX6650_U13_I2C_ADDR);
-  }
-  else
-    printf("Fan Speed FPGA (U13)\t\t\t:\t%d rpm\n",((int)buffer[0])*30);
-  
-  if (i2c_read(R2_SENSOR_MAX6650_U17_I2C_ADDR, R2_SENSOR_MAX6650_TACH0,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX6650_U17_I2C_ADDR);
-  }
-  else
-    printf("Fan Speed CHS Fan0 (U17)\t\t:\t%d rpm\n",((int)buffer[0])*30);
-  
-  if (i2c_read(R2_SENSOR_MAX6650_U21_I2C_ADDR, R2_SENSOR_MAX6650_TACH0,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX6650_U21_I2C_ADDR);
-  }
-  else
-    printf("Fan Speed CHS Fan1 (U21)\t\t:\t%d rpm\n",((int)buffer[0])*30);
- 
-  if (i2c_read(R2_SENSOR_MAX6650_U26_I2C_ADDR, R2_SENSOR_MAX6650_TACH0,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX6650_U26_I2C_ADDR);
-  } 
-  else
-    printf("Fan Speed CHS Fan2 (U26)\t\t:\t%d rpm\n",((int)buffer[0])*30);
- 
-  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX1,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
-  }
-  else
-    printf("Remote Temp of PPC (U22)\t\t:\t%d dC\t",(int)buffer[0]);
-  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX1_THIGH,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
-  }
-  else
-    printf("T_HIGH: %d dC ",(int)buffer[0]);
-  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX1_TLOW,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
-  }
-  else
-    printf("T_LOW: %d dC",(int)buffer[0]);
-  printf("\n");
-
-  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX2,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
-  }
-  else
-    printf("Remote Temp of FPGA (U22)\t\t:\t%d dC\t",(int)buffer[0]);
-  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX2_THIGH,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
-  }
-  else
-    printf("T_HIGH: %d dC ",(int)buffer[0]);
-  if (i2c_read(R2_SENSOR_MAX1805_U22_I2C_ADDR, R2_SENSOR_MAX1805_TEMP_DX2_TLOW,1, buffer, 1) != 0){
-    printf("cannot read from i2c device: %02x\n",R2_SENSOR_MAX1805_U22_I2C_ADDR);
-  }
-  else
-    printf("T_LOW: %d dC",(int)buffer[0]);
-  printf("\n");
-  
-  return 0;
-}
-
-static int dump_roach2_rtc(void)
-{
-  u8 buffer [R2_SENSOR_DS1307_TIME_LEN];
-  if (i2c_read(R2_SENSOR_DS1307_U11_I2C_ADDR,
-               R2_SENSOR_DS1307_TIME, 1, buffer,
-               R2_SENSOR_DS1307_TIME_LEN) != 0) {
-    printf("cannot read from i2c device: %02x\n", R2_SENSOR_DS1307_U11_I2C_ADDR);
-    return 1;
-  }
-
-  printf("%s ",R2_SENSOR_DS1307_DAY(buffer[3]-1));
-  printf("%02d/", (buffer[4] & 0xf) + (buffer[4] >> 4)*10);
-  printf("%02d/", (buffer[5] & 0xf) + (buffer[5] >> 4)*10);
-  printf("20%02d ", (buffer[6] & 0xf) + (buffer[6] >> 4)*10);
-
-  if (buffer[2] & R2_SENSOR_DS1307_12HR){
-    printf("%02d:", (buffer[2] & 0xf) +
-                   ((buffer[2] & 0x10) >> 4)*10 +
-                   (buffer[2] & 0x2 ? 12 : 0));
-  } else {
-    printf("%02d:", (buffer[2] & 0xf) + ((buffer[6] & 0x30) >> 4)*10);
-  }
-  printf("%02d:", (buffer[1] & 0xf) + (buffer[1] >> 4)*10);
-  printf("%02d\n", (buffer[0] & 0xf) + ((buffer[0]&0x70) >> 4)*10);
-
-  return 0;
-}
-
-#define DATE_BUF_SIZE 256
-
-int str_get_token(const char* str, char delim, char* buffer, int bufsize)
-{
-  int offset = 0; 
-  int got=0;
-  int buf_index=0;
-  while (str[offset] != '\0' && buf_index < bufsize - 1){
-    if (str[offset] == delim){
-      if (got == 1)
-        got=2;
-    } else {
-      if (got == 2){
-        break;
-      } else {
-        buffer[buf_index] = str[offset];
-        buf_index++;
-        got = 1;
-      }
-    }
-    offset++;
-  }
-  if (buf_index >= bufsize - 1){
-    buffer[bufsize - 1] = '\0';
-  } else {
-    buffer[buf_index] = '\0';
-  }
-  return offset;
-}
-
-static int set_roach2_rtc(const char* time_str)
-{
-  u8 databuf [R2_SENSOR_DS1307_TIME_LEN];
-  char strbuf [DATE_BUF_SIZE];
-  int offset=0;
-  u8 i;
-
-  /* Day */
-  offset += str_get_token(time_str + offset, ' ', strbuf, DATE_BUF_SIZE);
-  for (i=0; i < 7; i++){
-    if (!strncmp(R2_SENSOR_DS1307_DAY(i), strbuf, 3)){
-      databuf[3] = i+1;
-      break;
-    }
-    if (i==7){
-      printf("error: invalid DAY\n");
-      return 1;
-    }
-  }
-  /* Date */
-  offset += str_get_token(time_str + offset, '/', strbuf, DATE_BUF_SIZE);
-  i = simple_strtoul(strbuf, NULL, 10);
-  if (i  < 1  || i > 31){
-    printf("error: invalid DATE\n");
-    return 1;
-  }
-  databuf[4] = (i % 10) + ((i/10) << 4);
-
-  /* Month */
-  offset += str_get_token(time_str + offset, '/', strbuf, DATE_BUF_SIZE);
-  i = simple_strtoul(strbuf, NULL, 10);
-  if (i  < 1  || i > 12){
-    printf("error: invalid MONTH\n");
-    return 1;
-  }
-  databuf[5] = (i % 10) + ((i/10) << 4);
-
-  /* Year */
-  offset += str_get_token(time_str + offset, ' ', strbuf, DATE_BUF_SIZE);
-  if (strnlen(strbuf, DATE_BUF_SIZE) == 4){
-    i = simple_strtoul(strbuf + 2, NULL, 10);
-  } else {
-    i = simple_strtoul(strbuf, NULL, 10);
-  }
-  if (i > 99){
-    printf("error: invalid YEAR\n");
-    return 1;
-  }
-  databuf[6] = (i % 10) + ((i/10) << 4);
-
-  /* Hours */
-  offset += str_get_token(time_str + offset, ':', strbuf, DATE_BUF_SIZE);
-  i = simple_strtoul(strbuf, NULL, 10);
-  if (i > 23){
-    printf("error: invalid HOURS\n");
-    return 1;
-  }
-  databuf[2] = (i % 10) + ((((i/10) << 4))&0x3);
-
-  /* Minutes */
-  offset += str_get_token(time_str + offset, ':', strbuf, DATE_BUF_SIZE);
-  i = simple_strtoul(strbuf, NULL, 10);
-  if (i > 59){
-    printf("error: invalid MINUTES\n");
-    return 1;
-  }
-  databuf[1] = (i % 10) + (((i/10) << 4));
-
-  /* Seconds */
-  offset += str_get_token(time_str + offset, '\0', strbuf, DATE_BUF_SIZE);
-  i = simple_strtoul(strbuf, NULL, 10);
-  if (i > 59){
-    printf("error: invalid SECONDS\n");
-    return 1;
-  }
-  databuf[0] = (i % 10) + (((i/10) << 4));
-
-  if (i2c_write(R2_SENSOR_DS1307_U11_I2C_ADDR,
-                R2_SENSOR_DS1307_TIME, 1, databuf,
-                R2_SENSOR_DS1307_TIME_LEN) != 0) {
-    printf("cannot write to i2c device: %02x\n", R2_SENSOR_DS1307_U11_I2C_ADDR);
+  if (i2c_read(addr, reg, 1, buffer, 1) != 0) {
+    printf("cannot read from i2c device: %02x\n", addr);
     return -1;
   }
+  return buffer[0];
+}
+
+static int max16071_get_adcval(int which, u8 chan)
+{
+  int addr = which == VMON ? R2_VMON_IIC_ADDR : R2_CMON_IIC_ADDR;
+  int ret = 0;
+  int val;
+  val = sensor_get_reg(addr, MAX16071_REG_ADCVAL_MSB(chan));
+  if (val < 0) {
+    return -1;
+  }
+  ret |= (val & 0xff) << 8;
+  val = sensor_get_reg(addr, MAX16071_REG_ADCVAL_LSB(chan));
+  if (val < 0) {
+    return -1;
+  }
+  ret |= (val & 0xff);
+  return ret;
+}
+
+static int max16071_get_cmon(int which)
+{
+  int addr = which == VMON ? R2_VMON_IIC_ADDR : R2_CMON_IIC_ADDR;
+  int val;
+  val = sensor_get_reg(addr, MAX16071_REG_CMON);
+  if (val < 0) {
+    return -1;
+  }
+  return val & 0xff;
+}
+
+static void vmon_print_vals(void)
+{
+  int i;
+  int value;
+  printf("Supply voltages:\n");
+  for (i=0; i < VMON_COUNT; i++){
+    value = max16071_get_adcval(vmon_defs[i].device, vmon_defs[i].src);
+    if (value < 0) {
+      printf("error reading supply %s\n", vmon_defs[i].name);
+    } else {
+      value = (((value * VMON_FULLSCALE * vmon_defs[i].gain) / ((2^16)-1))) / 1000;
+      printf("supply %s: %d mV\n", vmon_defs[i].name, value);
+    }
+  }
+}
+
+static void cmon_print_vals(void)
+{
+  int i;
+  int value;
+  printf("Supply currents:\n");
+  for (i=0; i < CMON_COUNT; i++){
+    if (cmon_defs[i].src == CMON_SOURCE_EXTERNAL) {
+      value = max16071_get_cmon(cmon_defs[i].device);
+      if (value < 0) {
+        printf("error reading supply %s\n", cmon_defs[i].name);
+        continue;
+      } else {
+        value = (value * CMON_EXTERNAL_FULLSCALE *
+                     cmon_defs[i].conductance)/(((2^8)-1) * cmon_defs[i].gain);
+      }
+    } else {
+      value = max16071_get_adcval(cmon_defs[i].device, cmon_defs[i].src);
+      if (value < 0) {
+        printf("error reading supply %s\n", cmon_defs[i].name);
+        continue;
+      } else {
+        value = (value * CMON_FULLSCALE *
+                     cmon_defs[i].conductance)/(((2^16)-1) * cmon_defs[i].gain);
+      }
+    }
+    printf("supply %s: %d mA\n", cmon_defs[i].name, value);
+  }
+}
+
+static void pgood_print_vals(void)
+{
+  int i;
+  int value;
+  printf("Supply power-goods:\n");
+
+  for (i=0; i < PGOOD_COUNT; i++){
+    value = sensor_get_reg(pgood_defs[i].device, MAX16071_REG_GPIOI);
+    if (value < 0) {
+      printf("error reading supply %s\n", vmon_defs[i].name);
+    } else {
+      value &= (1 << pgood_defs[i].src);
+      printf("supply %s: ", vmon_defs[i].name);
+      if ((value && pgood_defs[i].level == PGOOD_ACTIVE_HIGH) ||
+          (!value && pgood_defs[i].level != PGOOD_ACTIVE_HIGH))
+        printf("good\n");
+      else
+        printf("bad\n");
+    }
+  }
+}
+
+/* vvvvv TODO: requires cleanup vvvvv */
+
+void ambient_print_vals(u8 addr, char *descrip)
+{
+  uchar buffer[2];
+
+  if (i2c_read(addr, R2_SENSOR_AD7414_TV, 1, buffer, 2) != 0) {
+    printf("error getting ambient[%02x]\n", addr);
+    return;
+  }
+
+  printf("ambient %s[%02x]:   %4d dC %s\n", descrip, addr, buffer[0],
+                    buffer[1] & 0x18 ? "[ALARM]" : "");
+}
+
+void remote_print_vals(void)
+{
+  int value;
+  u8 addr = R2_SENSOR_MAX1805_U22_I2C_ADDR;
+
+  value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_DX1);
+  if (value < 0){
+    printf("error getting remote temperature\n");
+    return;
+  }
+  printf("PowerPC  [%02x]:   %4d dC", addr, value);
+  value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_RS2);
+  printf("%s\n", value & 0xC0 ? "[ALARM]" : "");
+
+  value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_DX2);
+  if (value < 0){
+    printf("error getting remote temperature\n");
+    return;
+  }
+  printf("Virtex6  [%02x]:   %4d dC", addr, value);
+  value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_RS2);
+  printf("%s\n", value & 0x30 ? "[ALARM]" : "");
+}
+
+void fans_print_vals(u8 addr, char* descrip)
+{
+  int value;
+
+  value = sensor_get_reg(addr, R2_SENSOR_MAX6650_TACH0);
+  if (value < 0){
+    printf("error getting fan speed\n");
+    return;
+  }
+  printf("fan %s[%2x]:   %4d RPM", descrip, addr, value*30);
+  value = sensor_get_reg(addr, R2_SENSOR_MAX6650_ALARMST);
+  if (value < 0){
+    printf("error getting fan speed\n");
+    return;
+  }
+  printf("%s\n", value & 0x03 ? "[ALARM]" : "");
+}
+
+int dump_roach2_sensor_info(void)
+{
+ //vmon_print_vals();
+ //cmon_print_vals();
+ //pgood_print_vals();
+  ambient_print_vals(R2_SENSOR_AD7414_U15_I2C_ADDR, " ");
+  ambient_print_vals(R2_SENSOR_AD7414_U18_I2C_ADDR, " ");
+  remote_print_vals();
+  fans_print_vals(R2_SENSOR_MAX6650_U13_I2C_ADDR, "FPGA ");
+  fans_print_vals(R2_SENSOR_MAX6650_U17_I2C_ADDR, "CHS0 ");
+  fans_print_vals(R2_SENSOR_MAX6650_U21_I2C_ADDR, "CHS1 ");
+  fans_print_vals(R2_SENSOR_MAX6650_U26_I2C_ADDR, "CHS2 ");
+  
   return 0;
 }
 
@@ -259,16 +221,9 @@ static int do_roach2_sensors(cmd_tbl_t *cmdtp, int flag, int argc, char * const 
 */
   
   switch (argc) { 
-    case 3:
-      if (strcmp(argv[1],"rtc") == 0){
-         return set_roach2_rtc(argv[2]);
-      }
     case 2:
       if (strcmp(argv[1], "dump") == 0){
         return dump_roach2_sensor_info();
-      }
-      if (strcmp(argv[1],"rtc") == 0){
-         return dump_roach2_rtc();
       }
     case 1:
       return dump_roach2_sensor_info();
@@ -283,9 +238,7 @@ static int do_roach2_sensors(cmd_tbl_t *cmdtp, int flag, int argc, char * const 
 U_BOOT_CMD(
     r2sensor, 4, 1, do_roach2_sensors,
     "access roach2 sensors",
-    "[dump] - dump roach2 sensor information\n"
-    "         <rtc> - get the real-time clock time\n"
-    "         <rtc> <time> - set the real-time clock"
+    "[dump] - dump roach2 sensor information"
 );
 
 #endif /* CONFIG_CMD_R2SENSORS */ 

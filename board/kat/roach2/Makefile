@@ -31,6 +31,7 @@ COBJS-$(CONFIG_CMD_R2SMAP) += cmd_r2smap.o
 COBJS-$(CONFIG_CMD_R2DEBUG) += cmd_r2debug.o
 COBJS-$(CONFIG_CMD_R2GPIO) += cmd_r2gpio.o
 COBJS-$(CONFIG_CMD_R2SENSORS) += cmd_r2sensors.o
+COBJS-$(CONFIG_CMD_R2RTC) += cmd_r2rtc.o
 COBJS-$(CONFIG_CMD_R2BIT) += cmd_r2bit.o
 COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_qdr.o
 COBJS-$(CONFIG_CMD_R2BIT) += bit/bit_tge.o

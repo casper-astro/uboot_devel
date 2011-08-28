@@ -129,9 +129,6 @@
 #define CONFIG_DTT_AD7414          1  /* use AD7414 work arounds */
 #define CONFIG_SYS_I2C_DTT_ADDR    0x4c /* Air outlet temperature */
 #define CONFIG_DTT_SENSORS         {0x0, 0x2}  /* Sensor address offsets for dtt command*/
-#define CONFIG_SYS_DTT_MAX_TEMP    70
-#define CONFIG_SYS_DTT_LOW_TEMP    -30
-#define CONFIG_SYS_DTT_HYSTERESIS  3
 
 /*-----------------------------------------------------------------------
  * DDR2 SDRAM
@@ -269,6 +266,7 @@
 #define CONFIG_CMD_R2DEBUG
 #define CONFIG_CMD_R2GPIO
 #define CONFIG_CMD_R2SENSORS
+#define CONFIG_CMD_R2RTC
 #define CONFIG_CMD_R2BIT
 
 /*-----------------------------------------------------------------------
