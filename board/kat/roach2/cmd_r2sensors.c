@@ -45,7 +45,6 @@ static int sensor_get_reg(u8 addr, u8 reg)
 static int max16071_get_adcval(int which, u8 chan)
 {
   int addr = which == VMON ? R2_VMON_IIC_ADDR : R2_CMON_IIC_ADDR;
-  int ret = 0;
   int val;
   val = sensor_get_reg(addr, MAX16071_REG_ADCVAL_MSB(chan));
   if (val < 0) {
@@ -78,7 +77,7 @@ static void vmon_print_vals(void)
       //voltage = (value * VMON_FULLSCALE * vmon_defs[i].gain) / (((2^8)-1) * 1000);
       voltage = (value * VMON_FULLSCALE) / ((256)-1);
       voltage = (voltage * vmon_defs[i].gain) / 1000;
-      printf("supply    %s: %6d mV\n", vmon_defs[i].name, voltage);
+      printf("Vsupply     %s: %6d mV\n", vmon_defs[i].name, voltage);
     }
   }
 }
@@ -108,7 +107,7 @@ static void cmon_print_vals(void)
     }
     current = (voltage * cmon_defs[i].conductance)/(cmon_defs[i].gain);
     //printf("supply    %s: %d mA [%d, %d, %x]\n", cmon_defs[i].name, current, voltage*1000/cmon_defs[i].gain, voltage, value);
-    printf("supply       %s:  %5d mA\n", cmon_defs[i].name, current);
+    printf("Isupply        %s:  %5d mA\n", cmon_defs[i].name, current);
   }
 }
 
@@ -130,7 +129,7 @@ static void pgood_print_vals(void)
       printf("error reading supply %s\n", vmon_defs[i].name);
     } else {
       value &= (1 << pgood_defs[i].src);
-      printf("supply   %s: ", pgood_defs[i].name);
+      printf("PGsupply   %s: ", pgood_defs[i].name);
       if ((value && pgood_defs[i].level == PGOOD_ACTIVE_HIGH) ||
           (!value && pgood_defs[i].level != PGOOD_ACTIVE_HIGH))
         printf("    ok\n");
@@ -151,7 +150,7 @@ void ambient_print_vals(u8 addr, char *descrip)
     return;
   }
 
-  printf("ambient    %s[%02x]:   %4d dC %s\n", descrip, addr, buffer[0],
+  printf("Tambient   %s:   %4d dC %s\n", descrip, buffer[0],
                     buffer[1] & 0x18 ? "[ALARM]" : "");
 }
 
@@ -165,7 +164,7 @@ void remote_print_vals(void)
     printf("error getting remote temperature\n");
     return;
   }
-  printf("PowerPC     [%02x]:   %4d dC", addr, value);
+  printf("Tremote    PowerPC:   %4d dC", value);
   value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_RS2);
   printf("%s\n", value & 0xC0 ? "[ALARM]" : "");
 
@@ -174,7 +173,7 @@ void remote_print_vals(void)
     printf("error getting remote temperature\n");
     return;
   }
-  printf("Virtex6     [%02x]:   %4d dC", addr, value);
+  printf("Tremote    Virtex6:   %4d dC", value);
   value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_RS2);
   printf("%s\n", value & 0x30 ? "[ALARM]" : "");
 }
@@ -188,7 +187,7 @@ void fans_print_vals(u8 addr, char* descrip)
     printf("error getting fan speed\n");
     return;
   }
-  printf("fan    %s[%2x]:   %4d RPM", descrip, addr, value*30);
+  printf("Sfan         %s:   %4d RPM", descrip, value*30);
   value = sensor_get_reg(addr, R2_SENSOR_MAX6650_ALARMST);
   if (value < 0){
     printf("error getting fan speed\n");
@@ -202,13 +201,13 @@ int dump_roach2_sensor_info(void)
   vmon_print_vals();
   cmon_print_vals();
   pgood_print_vals();
-  ambient_print_vals(R2_SENSOR_AD7414_U15_I2C_ADDR, " ");
-  ambient_print_vals(R2_SENSOR_AD7414_U18_I2C_ADDR, " ");
+  ambient_print_vals(R2_SENSOR_AD7414_U15_I2C_ADDR, "  inlet");
+  ambient_print_vals(R2_SENSOR_AD7414_U18_I2C_ADDR, " outlet");
   remote_print_vals();
-  fans_print_vals(R2_SENSOR_MAX6650_U13_I2C_ADDR, "FPGA ");
-  fans_print_vals(R2_SENSOR_MAX6650_U17_I2C_ADDR, "CHS0 ");
-  fans_print_vals(R2_SENSOR_MAX6650_U21_I2C_ADDR, "CHS1 ");
-  fans_print_vals(R2_SENSOR_MAX6650_U26_I2C_ADDR, "CHS2 ");
+  fans_print_vals(R2_SENSOR_MAX6650_U13_I2C_ADDR, " FPGA");
+  fans_print_vals(R2_SENSOR_MAX6650_U17_I2C_ADDR, " CHS0");
+  fans_print_vals(R2_SENSOR_MAX6650_U21_I2C_ADDR, " CHS1");
+  fans_print_vals(R2_SENSOR_MAX6650_U26_I2C_ADDR, " CHS2");
   
   return 0;
 }
