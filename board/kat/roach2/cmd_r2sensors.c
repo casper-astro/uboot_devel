@@ -51,13 +51,7 @@ static int max16071_get_adcval(int which, u8 chan)
   if (val < 0) {
     return -1;
   }
-  ret |= (val & 0xff) << 8;
-  val = sensor_get_reg(addr, MAX16071_REG_ADCVAL_LSB(chan));
-  if (val < 0) {
-    return -1;
-  }
-  ret |= (val & 0xff);
-  return ret;
+  return val & 0xff;
 }
 
 static int max16071_get_cmon(int which)
@@ -74,15 +68,17 @@ static int max16071_get_cmon(int which)
 static void vmon_print_vals(void)
 {
   int i;
-  int value;
-  printf("Supply voltages:\n");
+  int value, voltage;
+  //printf("Supply voltages:\n");
   for (i=0; i < VMON_COUNT; i++){
     value = max16071_get_adcval(vmon_defs[i].device, vmon_defs[i].src);
     if (value < 0) {
       printf("error reading supply %s\n", vmon_defs[i].name);
     } else {
-      value = (((value * VMON_FULLSCALE * vmon_defs[i].gain) / ((2^16)-1))) / 1000;
-      printf("supply %s: %d mV\n", vmon_defs[i].name, value);
+      //voltage = (value * VMON_FULLSCALE * vmon_defs[i].gain) / (((2^8)-1) * 1000);
+      voltage = (value * VMON_FULLSCALE) / ((256)-1);
+      voltage = (voltage * vmon_defs[i].gain) / 1000;
+      printf("supply    %s: %6d mV\n", vmon_defs[i].name, voltage);
     }
   }
 }
@@ -90,8 +86,8 @@ static void vmon_print_vals(void)
 static void cmon_print_vals(void)
 {
   int i;
-  int value;
-  printf("Supply currents:\n");
+  int value, current, voltage;
+  //printf("Supply currents:\n");
   for (i=0; i < CMON_COUNT; i++){
     if (cmon_defs[i].src == CMON_SOURCE_EXTERNAL) {
       value = max16071_get_cmon(cmon_defs[i].device);
@@ -99,8 +95,7 @@ static void cmon_print_vals(void)
         printf("error reading supply %s\n", cmon_defs[i].name);
         continue;
       } else {
-        value = (value * CMON_EXTERNAL_FULLSCALE *
-                     cmon_defs[i].conductance)/(((2^8)-1) * cmon_defs[i].gain);
+        voltage = (value * CMON_EXTERNAL_FULLSCALE)/255;
       }
     } else {
       value = max16071_get_adcval(cmon_defs[i].device, cmon_defs[i].src);
@@ -108,11 +103,12 @@ static void cmon_print_vals(void)
         printf("error reading supply %s\n", cmon_defs[i].name);
         continue;
       } else {
-        value = (value * CMON_FULLSCALE *
-                     cmon_defs[i].conductance)/(((2^16)-1) * cmon_defs[i].gain);
+        voltage = (value * CMON_FULLSCALE)/255;
       }
     }
-    printf("supply %s: %d mA\n", cmon_defs[i].name, value);
+    current = (voltage * cmon_defs[i].conductance)/(cmon_defs[i].gain);
+    //printf("supply    %s: %d mA [%d, %d, %x]\n", cmon_defs[i].name, current, voltage*1000/cmon_defs[i].gain, voltage, value);
+    printf("supply       %s:  %5d mA\n", cmon_defs[i].name, current);
   }
 }
 
@@ -120,20 +116,26 @@ static void pgood_print_vals(void)
 {
   int i;
   int value;
-  printf("Supply power-goods:\n");
+  u8 addr;
+  //printf("Supply power-goods:\n");
 
   for (i=0; i < PGOOD_COUNT; i++){
-    value = sensor_get_reg(pgood_defs[i].device, MAX16071_REG_GPIOI);
+    if (pgood_defs[i].device == VMON)
+      addr = R2_VMON_IIC_ADDR;
+    else
+      addr = R2_CMON_IIC_ADDR;
+
+    value = sensor_get_reg(addr, MAX16071_REG_GPIOI);
     if (value < 0) {
       printf("error reading supply %s\n", vmon_defs[i].name);
     } else {
       value &= (1 << pgood_defs[i].src);
-      printf("supply %s: ", vmon_defs[i].name);
+      printf("supply   %s: ", pgood_defs[i].name);
       if ((value && pgood_defs[i].level == PGOOD_ACTIVE_HIGH) ||
           (!value && pgood_defs[i].level != PGOOD_ACTIVE_HIGH))
-        printf("good\n");
+        printf("    ok\n");
       else
-        printf("bad\n");
+        printf("   bad\n");
     }
   }
 }
@@ -149,7 +151,7 @@ void ambient_print_vals(u8 addr, char *descrip)
     return;
   }
 
-  printf("ambient %s[%02x]:   %4d dC %s\n", descrip, addr, buffer[0],
+  printf("ambient    %s[%02x]:   %4d dC %s\n", descrip, addr, buffer[0],
                     buffer[1] & 0x18 ? "[ALARM]" : "");
 }
 
@@ -163,7 +165,7 @@ void remote_print_vals(void)
     printf("error getting remote temperature\n");
     return;
   }
-  printf("PowerPC  [%02x]:   %4d dC", addr, value);
+  printf("PowerPC     [%02x]:   %4d dC", addr, value);
   value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_RS2);
   printf("%s\n", value & 0xC0 ? "[ALARM]" : "");
 
@@ -172,7 +174,7 @@ void remote_print_vals(void)
     printf("error getting remote temperature\n");
     return;
   }
-  printf("Virtex6  [%02x]:   %4d dC", addr, value);
+  printf("Virtex6     [%02x]:   %4d dC", addr, value);
   value = sensor_get_reg(addr, R2_SENSOR_MAX1805_TEMP_RS2);
   printf("%s\n", value & 0x30 ? "[ALARM]" : "");
 }
@@ -186,7 +188,7 @@ void fans_print_vals(u8 addr, char* descrip)
     printf("error getting fan speed\n");
     return;
   }
-  printf("fan %s[%2x]:   %4d RPM", descrip, addr, value*30);
+  printf("fan    %s[%2x]:   %4d RPM", descrip, addr, value*30);
   value = sensor_get_reg(addr, R2_SENSOR_MAX6650_ALARMST);
   if (value < 0){
     printf("error getting fan speed\n");
@@ -197,9 +199,9 @@ void fans_print_vals(u8 addr, char* descrip)
 
 int dump_roach2_sensor_info(void)
 {
- //vmon_print_vals();
- //cmon_print_vals();
- //pgood_print_vals();
+  vmon_print_vals();
+  cmon_print_vals();
+  pgood_print_vals();
   ambient_print_vals(R2_SENSOR_AD7414_U15_I2C_ADDR, " ");
   ambient_print_vals(R2_SENSOR_AD7414_U18_I2C_ADDR, " ");
   remote_print_vals();

@@ -92,12 +92,16 @@ struct ad7414_config {
 #define MAX16071_REG_ADCVAL_MSB(x) ((x)*2)
 #define MAX16071_REG_ADCVAL_LSB(x) ((x)*2 + 1)
 
+#define MAX16071_REG_EN 0x73
+
 #define MAX16071_REG_CMON 0x18
 #define MAX16071_REG_GPIOI 0x1e
 
 #define MAX16071_REG_GPIOCONF0 0x3f
 #define MAX16071_REG_GPIOCONF1 0x40
 #define MAX16071_REG_GPIOCONF2 0x41
+#define MAX16071_REG_GPIOOTYPE 0x42
+
 #define MAX16071_REG_GPIOOTYPE 0x42
 
 #define MAX16071_REG_SUV(x) (0x48 + 3*(x))
@@ -115,7 +119,10 @@ struct max16071_config {
   u8 suv[MAX16071_CHANCNT];
   u8 cmon_config;
   u8 chan_config[MAX16071_CHANCNT];
+  u8 en_config;
 };
+
+#define MAX16071_EN_SW 0x1
 
 #define MAX16071_CHAN_FS5V6 0x0
 #define MAX16071_CHAN_FS1V4 0x2
@@ -158,11 +165,12 @@ struct max16071_pgood {
 
 #define CMON_SOURCE_EXTERNAL 255
 
-#define CMON_FULLSCALE 1400
+#define CMON_FULLSCALE 5600
 #define CMON_EXTERNAL_FULLSCALE 58
 
+/* TODO: need to calibrate sense resistance values */
 #define CMON_COUNT 7
-#define CURRENT_DEFS { {"1V0", CMON, 4, 1000, 4000}, \
+#define CURRENT_DEFS { {"1V0", CMON, 4, 1000, 2500}, \
                        {"1V5", CMON, 3, 1000, 1000}, \
                        {"1V8", CMON, 2, 500, 500}, \
                        {"2V5", CMON, 1, 200, 200}, \

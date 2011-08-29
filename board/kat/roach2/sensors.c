@@ -79,8 +79,9 @@ struct ad7414_config ambient1_config = {
 };
 
 struct max16071_config vmon_config = {
+  .en_config = MAX16071_EN_SW,
   /* first is fault all others input */
-  .gpio_function = MAX16071_GPIO_FUNC(MAX16071_GPIO_FUNC_FAULTANY, 0x0),
+  .gpio_function = 0x0, // MAX16071_GPIO_FUNC(MAX16071_GPIO_FUNC_FAULTANY, 0x0),
   /* first is open drain, dont care for others */
   .gpio_out_type = MAX16071_GPIO_OTYPE_ODRAIN,
   /* disable all over voltage checks */
@@ -96,8 +97,9 @@ struct max16071_config vmon_config = {
   };
 
 struct max16071_config cmon_config = {
+  .en_config = MAX16071_EN_SW,
   /* first is fault all others input */
-  .gpio_function = MAX16071_GPIO_FUNC(MAX16071_GPIO_FUNC_FAULTANY, 0x0),
+  .gpio_function = 0x0, // MAX16071_GPIO_FUNC(MAX16071_GPIO_FUNC_FAULTANY, 0x0),
   /* first is open drain, dont care for others */
   .gpio_out_type = MAX16071_GPIO_OTYPE_ODRAIN,
   /* disable all over voltage checks */
@@ -107,8 +109,8 @@ struct max16071_config cmon_config = {
   .suv = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
   .cmon_config = MAX16071_CMON_EN | MAX16071_CMON_RANGE16V | MAX16071_CMON_GAIN24,
   .chan_config = {
-      MAX16071_CHAN_FS1V4, MAX16071_CHAN_FS1V4, MAX16071_CHAN_FS1V4, MAX16071_CHAN_FS1V4,
-      MAX16071_CHAN_FS1V4, MAX16071_CHAN_FS1V4, MAX16071_CHAN_FS1V4, MAX16071_CHAN_FS1V4
+      MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6,
+      MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6
     },
   };
 
@@ -174,6 +176,10 @@ int max16071_config(int addr, struct max16071_config* maxc)
         return -1;
       }
     }
+  }
+
+  if (sensor_write(addr, MAX16071_REG_EN, maxc->en_config)) {
+    return -1;
   }
 
   return 0;
