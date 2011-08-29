@@ -177,7 +177,7 @@ static int do_roach2_rtc(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv
   
   switch (argc) { 
     case 2:
-      return set_roach2_rtc(argv[2]);
+      return set_roach2_rtc(argv[1]);
     case 1:
       return dump_roach2_rtc();
       break;
