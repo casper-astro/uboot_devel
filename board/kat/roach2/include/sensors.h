@@ -134,7 +134,8 @@ struct max16071_config {
 
 #define MAX16071_CMON_EN 0x1
 #define MAX16071_CMON_RANGE16V (0x1 << 1)  
-#define MAX16071_CMON_GAIN24 (0x10 << 2)
+
+#define MAX16071_CMON_GAIN48 (0x3 << 2)
 
 #define MAX16071_REG_CHANGAIN(x) (0x43 + (x))
 
@@ -166,7 +167,7 @@ struct max16071_pgood {
 #define CMON_SOURCE_EXTERNAL 255
 
 #define CMON_FULLSCALE 5600
-#define CMON_EXTERNAL_FULLSCALE 58
+#define CMON_EXTERNAL_FULLSCALE 1400
 
 /* TODO: need to calibrate sense resistance values */
 #define CMON_COUNT 7
@@ -175,8 +176,8 @@ struct max16071_pgood {
                        {"1V8", CMON, 2, 500, 500}, \
                        {"2V5", CMON, 1, 200, 200}, \
                        {"3V3", CMON, 0, 500, 500}, \
-                       {" 5V", CMON, CMON_SOURCE_EXTERNAL, 1, 500}, \
-                       {"12V", VMON, CMON_SOURCE_EXTERNAL, 1, 200},}
+                       {" 5V", CMON, CMON_SOURCE_EXTERNAL, 48, 500}, \
+                       {"12V", VMON, CMON_SOURCE_EXTERNAL, 48, 200},}
 
 #define VMON_FULLSCALE 5600
 #define VMON_COUNT 8

@@ -89,7 +89,7 @@ struct max16071_config vmon_config = {
   /* disable all under voltage checks */
   .uv = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
   .suv = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
-  .cmon_config = MAX16071_CMON_EN | MAX16071_CMON_RANGE16V | MAX16071_CMON_GAIN24,
+  .cmon_config = MAX16071_CMON_EN | MAX16071_CMON_RANGE16V | MAX16071_CMON_GAIN48,
   .chan_config = {
       MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6,
       MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6
@@ -107,7 +107,7 @@ struct max16071_config cmon_config = {
   /* disable all under voltage checks */
   .uv = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
   .suv = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0},
-  .cmon_config = MAX16071_CMON_EN | MAX16071_CMON_RANGE16V | MAX16071_CMON_GAIN24,
+  .cmon_config = MAX16071_CMON_EN | MAX16071_CMON_RANGE16V | MAX16071_CMON_GAIN48,
   .chan_config = {
       MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6,
       MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6, MAX16071_CHAN_FS5V6
